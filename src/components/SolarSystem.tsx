@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -94,14 +94,28 @@ function SolarSystemScene() {
 }
 
 export default function SolarSystem() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setVisible(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="absolute inset-0 z-0">
+    <div ref={containerRef} className="absolute inset-0 z-0">
       <Canvas
         camera={{ position: [0, 12, 20], fov: 60 }}
         style={{ background: "#020617" }}
         dpr={[1, 1.5]}
         gl={{ antialias: false, powerPreference: "high-performance" }}
-        performance={{ min: 0.5 }}
+        frameloop={visible ? "always" : "never"}
       >
         <StaticStars />
         <SolarSystemScene />
