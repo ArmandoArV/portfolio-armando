@@ -35,7 +35,7 @@ export const profile = {
   name: "Armando Arredondo Valle",
   tagline: "Software Engineer @ Microsoft",
   subtitle: "Building cloud-native systems, AI solutions & real-time applications",
-  email: "armando.arredondo.valle@gmail.com",
+  email: "contact@armandoav.com",
   phone: "+52 777 114 0555",
   linkedin: "https://www.linkedin.com/in/armando-av",
   github: "https://github.com/ArmandoArV",
