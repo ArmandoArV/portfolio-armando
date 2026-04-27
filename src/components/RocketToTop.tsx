@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRocket } from "@fortawesome/free-solid-svg-icons";
+import { faStar } from "@fortawesome/free-solid-svg-icons";
 
 export default function RocketToTop() {
   const [visible, setVisible] = useState(false);
@@ -41,30 +41,30 @@ export default function RocketToTop() {
           >
             {/* Rocket */}
             <div className="text-xl text-blue-400 group-hover:text-blue-300 group-hover:-translate-y-1 transition-all duration-300">
-              <FontAwesomeIcon icon={faRocket} className="w-5 h-5 -rotate-45" />
+              <FontAwesomeIcon icon={faStar} className="w-5 h-5" />
             </div>
 
-            {/* Flame */}
-            <div className="flex gap-[1px] -mt-1">
+            {/* Stardust trail particles */}
+            <div className="flex gap-[2px] -mt-0.5">
               <motion.div
-                animate={{ height: [4, 10, 6, 12, 4], opacity: [0.6, 1, 0.8, 1, 0.6] }}
+                animate={{ height: [3, 8, 5, 10, 3], opacity: [0.4, 0.8, 0.6, 1, 0.4] }}
                 transition={{ repeat: Infinity, duration: 0.5 }}
-                className="w-[3px] rounded-full bg-gradient-to-b from-orange-400 to-transparent"
+                className="w-[2px] rounded-full bg-gradient-to-b from-blue-300 to-transparent"
               />
               <motion.div
-                animate={{ height: [8, 14, 10, 16, 8], opacity: [0.8, 1, 0.9, 1, 0.8] }}
+                animate={{ height: [6, 12, 8, 14, 6], opacity: [0.6, 1, 0.8, 1, 0.6] }}
                 transition={{ repeat: Infinity, duration: 0.4 }}
-                className="w-[3px] rounded-full bg-gradient-to-b from-yellow-400 via-orange-500 to-transparent"
+                className="w-[2px] rounded-full bg-gradient-to-b from-blue-400 via-indigo-400 to-transparent"
               />
               <motion.div
-                animate={{ height: [4, 10, 6, 12, 4], opacity: [0.6, 1, 0.8, 1, 0.6] }}
+                animate={{ height: [3, 8, 5, 10, 3], opacity: [0.4, 0.8, 0.6, 1, 0.4] }}
                 transition={{ repeat: Infinity, duration: 0.6 }}
-                className="w-[3px] rounded-full bg-gradient-to-b from-orange-400 to-transparent"
+                className="w-[2px] rounded-full bg-gradient-to-b from-blue-300 to-transparent"
               />
             </div>
 
             {/* Glow base */}
-            <div className="absolute -bottom-2 w-8 h-4 bg-orange-500/20 rounded-full blur-md group-hover:bg-orange-500/30 transition-all" />
+            <div className="absolute -bottom-2 w-8 h-4 bg-blue-500/20 rounded-full blur-md group-hover:bg-blue-500/30 transition-all" />
           </motion.div>
         </motion.button>
       )}
