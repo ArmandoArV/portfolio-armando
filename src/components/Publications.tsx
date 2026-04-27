@@ -7,7 +7,7 @@ export default function Publications() {
   return (
     <div id="publications" className="max-w-5xl mx-auto px-6 py-20">
       <AnimatedSection>
-        <h2 className="text-3xl font-bold mb-12 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold mb-12 bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
           Publications
         </h2>
       </AnimatedSection>
@@ -15,7 +15,7 @@ export default function Publications() {
       <div className="space-y-6">
         {publications.map((pub, i) => (
           <AnimatedSection key={pub.title} delay={i * 0.15}>
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 hover:border-cyan-500/30 transition-all duration-300">
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 hover:border-blue-500/30 transition-all duration-300">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white shrink-0">
                   {pub.year.slice(-2)}

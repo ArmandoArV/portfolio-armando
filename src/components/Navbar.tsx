@@ -29,13 +29,13 @@ export default function Navbar() {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-slate-900/90 backdrop-blur-md shadow-lg shadow-cyan-500/5"
+          ? "bg-slate-900/90 backdrop-blur-md shadow-lg shadow-blue-500/5"
           : "bg-transparent"
       }`}
     >
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        <a href="#" className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-          AA
+        <a href="#" className="text-xl font-bold tracking-tight text-slate-200 hover:text-white transition-colors">
+          AA<span className="text-blue-400">.</span>
         </a>
 
         {/* Desktop */}
@@ -44,10 +44,10 @@ export default function Navbar() {
             <a
               key={item.href}
               href={item.href}
-              className="text-sm text-slate-300 hover:text-cyan-400 transition-colors duration-200 relative group"
+              className="text-sm text-slate-300 hover:text-blue-400 transition-colors duration-200 relative group"
             >
               {item.label}
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan-400 transition-all duration-300 group-hover:w-full" />
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-400 transition-all duration-300 group-hover:w-full" />
             </a>
           ))}
         </div>
@@ -55,7 +55,7 @@ export default function Navbar() {
         {/* Mobile burger */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="md:hidden text-slate-300 hover:text-cyan-400"
+          className="md:hidden text-slate-300 hover:text-blue-400"
           aria-label="Toggle menu"
         >
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -83,7 +83,7 @@ export default function Navbar() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className="text-slate-300 hover:text-cyan-400 transition-colors"
+                  className="text-slate-300 hover:text-blue-400 transition-colors"
                 >
                   {item.label}
                 </a>

@@ -24,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} antialiased scroll-smooth`}>
-      <body className="bg-slate-950 text-white font-sans">
+      <body className="bg-slate-950 leading-relaxed text-slate-400 antialiased font-sans">
         <Providers>{children}</Providers>
       </body>
     </html>

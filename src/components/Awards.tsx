@@ -10,7 +10,7 @@ export default function Awards() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-20">
       <AnimatedSection>
-        <h2 className="text-3xl font-bold mb-12 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold mb-12 bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
           Honors & Awards
         </h2>
       </AnimatedSection>
@@ -35,7 +35,7 @@ export default function Awards() {
       </div>
 
       <AnimatedSection>
-        <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
           Languages
         </h2>
       </AnimatedSection>
@@ -43,8 +43,8 @@ export default function Awards() {
       <div className="flex flex-wrap gap-4">
         {languages.map((lang, i) => (
           <AnimatedSection key={lang.name} delay={i * 0.1}>
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl px-6 py-4 hover:border-cyan-500/30 transition-all duration-300 text-center">
-              <FontAwesomeIcon icon={faGlobe} className="w-4 h-4 text-cyan-400 mb-2" />
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl px-6 py-4 hover:border-blue-500/30 transition-all duration-300 text-center">
+              <FontAwesomeIcon icon={faGlobe} className="w-4 h-4 text-blue-400 mb-2" />
               <p className="text-white font-bold">{lang.name}</p>
               <p className="text-xs text-slate-400 mt-1">{lang.level}</p>
             </div>

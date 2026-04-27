@@ -5,9 +5,10 @@ import { projects } from "@/data/portfolio";
 import AnimatedSection from "./AnimatedSection";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
+import TiltCard from "./TiltCard";
 
 const TECH_COLORS: Record<string, string> = {
-  React: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+  React: "bg-blue-500/10 text-blue-400 border-blue-500/20",
   JavaScript: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
   TypeScript: "bg-blue-500/10 text-blue-400 border-blue-500/20",
   Python: "bg-green-500/10 text-green-400 border-green-500/20",
@@ -30,27 +31,29 @@ export default function Projects() {
   return (
     <div id="projects" className="max-w-5xl mx-auto px-6 py-20">
       <AnimatedSection>
-        <h2 className="text-3xl font-bold mb-12 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold mb-12 bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
           Projects
         </h2>
       </AnimatedSection>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 group/list">
         {projects.map((project, i) => (
           <AnimatedSection key={project.name} delay={i * 0.1}>
+            <div className="lg:group-hover/list:opacity-50 hover:!opacity-100 transition-opacity duration-300 h-full">
+            <TiltCard className="h-full">
             <motion.a
               href={project.url}
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ y: -4 }}
-              className="block bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 hover:border-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/5 transition-all duration-300 h-full group"
+              className="block bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300 h-full group"
             >
               <div className="flex items-center gap-2 mb-3">
-                <FontAwesomeIcon icon={faGithub} className="w-5 h-5 text-slate-400 group-hover:text-cyan-400 transition-colors" />
-                <span className="text-xs text-slate-500 group-hover:text-cyan-400/60 transition-colors">View on GitHub</span>
+                <FontAwesomeIcon icon={faGithub} className="w-5 h-5 text-slate-400 group-hover:text-blue-400 transition-colors" />
+                <span className="text-xs text-slate-500 group-hover:text-blue-400/60 transition-colors">View on GitHub</span>
               </div>
 
-              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-cyan-300 transition-colors leading-tight">
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors leading-tight">
                 {project.name}
               </h3>
 
@@ -69,6 +72,8 @@ export default function Projects() {
                 ))}
               </div>
             </motion.a>
+            </TiltCard>
+            </div>
           </AnimatedSection>
         ))}
       </div>

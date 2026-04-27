@@ -7,10 +7,16 @@ import Skills from "@/components/Skills";
 import Publications from "@/components/Publications";
 import Awards from "@/components/Awards";
 import Contact from "@/components/Contact";
+import SpotlightCursor from "@/components/SpotlightCursor";
+import ShootingStarCursor from "@/components/ShootingStarCursor";
+import ScrollProgress from "@/components/ScrollProgress";
 
 export default function Home() {
   return (
     <>
+      <SpotlightCursor />
+      <ShootingStarCursor />
+      <ScrollProgress />
       <Navbar />
       <Hero />
       <main>

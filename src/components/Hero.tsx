@@ -6,6 +6,7 @@ import { profile } from "@/data/portfolio";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub, faLinkedin } from "@fortawesome/free-brands-svg-icons";
 import { faArrowRight, faEnvelope } from "@fortawesome/free-solid-svg-icons";
+import MagneticButton from "./MagneticButton";
 
 const SolarSystem = dynamic(() => import("./SolarSystem"), { ssr: false });
 
@@ -28,21 +29,21 @@ export default function Hero() {
           transition={{ duration: 0.7, delay: 0.1 }}
           className="relative mb-6 mx-auto"
         >
-          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full mx-auto overflow-hidden ring-4 ring-cyan-400/30 shadow-lg shadow-cyan-500/20">
+          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full mx-auto overflow-hidden ring-4 ring-blue-400/20 shadow-lg shadow-blue-500/15">
             <img
               src="/images/Armando-5.jpg"
               alt="Armando Arredondo Valle"
               className="w-full h-full object-cover"
             />
           </div>
-          <div className="absolute inset-0 w-32 h-32 md:w-40 md:h-40 mx-auto rounded-full bg-gradient-to-tr from-cyan-500/10 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 w-32 h-32 md:w-40 md:h-40 mx-auto rounded-full bg-gradient-to-tr from-blue-500/10 to-transparent pointer-events-none" />
         </motion.div>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-cyan-400 text-sm tracking-[0.3em] uppercase mb-4 font-medium"
+          className="text-blue-400 text-sm tracking-[0.3em] uppercase mb-4 font-medium"
         >
           Welcome to my universe
         </motion.p>
@@ -51,9 +52,9 @@ export default function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.4 }}
-          className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-[0_0_30px_rgba(6,182,212,0.3)]"
+          className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-[0_0_30px_rgba(96,165,250,0.2)]"
         >
-          <span className="bg-gradient-to-r from-white via-cyan-200 to-cyan-400 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-white via-blue-200 to-blue-400 bg-clip-text text-transparent">
             {profile.name}
           </span>
         </motion.h1>
@@ -82,34 +83,42 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 1.0 }}
           className="flex flex-wrap gap-4 justify-center"
         >
+          <MagneticButton>
           <a
             href="#experience"
-            className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-full font-medium hover:shadow-lg hover:shadow-cyan-500/30 transition-all duration-300 hover:scale-105 flex items-center gap-2"
+            className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full font-medium hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:scale-105 flex items-center gap-2"
           >
             View My Work <FontAwesomeIcon icon={faArrowRight} className="w-4 h-4" />
           </a>
+          </MagneticButton>
+          <MagneticButton>
           <a
             href={profile.github}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-8 py-3 border border-slate-600 text-slate-300 rounded-full font-medium hover:border-cyan-400 hover:text-cyan-400 transition-all duration-300 hover:scale-105 flex items-center gap-2"
+            className="px-8 py-3 border border-slate-600 text-slate-300 rounded-full font-medium hover:border-blue-400 hover:text-blue-400 transition-all duration-300 hover:scale-105 flex items-center gap-2"
           >
             <FontAwesomeIcon icon={faGithub} className="w-4 h-4" /> GitHub
           </a>
+          </MagneticButton>
+          <MagneticButton>
           <a
             href={profile.linkedin}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-8 py-3 border border-slate-600 text-slate-300 rounded-full font-medium hover:border-cyan-400 hover:text-cyan-400 transition-all duration-300 hover:scale-105 flex items-center gap-2"
+            className="px-8 py-3 border border-slate-600 text-slate-300 rounded-full font-medium hover:border-blue-400 hover:text-blue-400 transition-all duration-300 hover:scale-105 flex items-center gap-2"
           >
             <FontAwesomeIcon icon={faLinkedin} className="w-4 h-4" /> LinkedIn
           </a>
+          </MagneticButton>
+          <MagneticButton>
           <a
             href={`mailto:${profile.email}`}
-            className="px-8 py-3 border border-slate-600 text-slate-300 rounded-full font-medium hover:border-cyan-400 hover:text-cyan-400 transition-all duration-300 hover:scale-105 flex items-center gap-2"
+            className="px-8 py-3 border border-slate-600 text-slate-300 rounded-full font-medium hover:border-blue-400 hover:text-blue-400 transition-all duration-300 hover:scale-105 flex items-center gap-2"
           >
             <FontAwesomeIcon icon={faEnvelope} className="w-4 h-4" /> Contact
           </a>
+          </MagneticButton>
         </motion.div>
       </div>
 
@@ -125,7 +134,7 @@ export default function Hero() {
           transition={{ repeat: Infinity, duration: 1.5 }}
           className="w-6 h-10 border-2 border-slate-500 rounded-full flex justify-center pt-2"
         >
-          <div className="w-1 h-2 bg-cyan-400 rounded-full" />
+          <div className="w-1 h-2 bg-blue-400 rounded-full" />
         </motion.div>
       </motion.div>
     </section>
