@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRocket } from "@fortawesome/free-solid-svg-icons";
 
 export default function RocketToTop() {
   const [visible, setVisible] = useState(false);
@@ -38,8 +40,8 @@ export default function RocketToTop() {
             className="relative flex flex-col items-center"
           >
             {/* Rocket */}
-            <div className="text-2xl group-hover:-translate-y-1 transition-transform duration-300">
-              🚀
+            <div className="text-xl text-blue-400 group-hover:text-blue-300 group-hover:-translate-y-1 transition-all duration-300">
+              <FontAwesomeIcon icon={faRocket} className="w-5 h-5 -rotate-45" />
             </div>
 
             {/* Flame */}
