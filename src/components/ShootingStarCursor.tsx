@@ -24,6 +24,8 @@ export default function ShootingStarCursor() {
     if (!ctx) return;
 
     let running = true;
+    let lastMoveTime = performance.now();
+    let idle = false;
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -34,11 +36,23 @@ export default function ShootingStarCursor() {
 
     const move = (e: MouseEvent) => {
       mouse.current = { x: e.clientX, y: e.clientY };
+      lastMoveTime = performance.now();
+      idle = false;
     };
     window.addEventListener("mousemove", move);
 
     const tick = () => {
       if (!running) return;
+
+      // Go idle if mouse hasn't moved for 2s and no trails left
+      if (performance.now() - lastMoveTime > 2000 && trails.current.length === 0) {
+        idle = true;
+      }
+
+      if (idle) {
+        requestAnimationFrame(tick);
+        return;
+      }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 

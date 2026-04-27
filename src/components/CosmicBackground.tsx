@@ -39,6 +39,8 @@ export default function CosmicBackground() {
     let running = true;
     let w = 0;
     let h = 0;
+    let lastFrame = 0;
+    const FRAME_INTERVAL = 1000 / 30; // Cap at 30fps
 
     const resize = () => {
       w = window.innerWidth;
@@ -48,7 +50,7 @@ export default function CosmicBackground() {
 
       // Regenerate stars on resize
       stars.current = [];
-      const count = Math.floor((w * window.innerHeight) / 4000);
+      const count = Math.floor((w * window.innerHeight) / 6000);
       for (let i = 0; i < count; i++) {
         stars.current.push({
           x: Math.random() * w,
@@ -100,9 +102,16 @@ export default function CosmicBackground() {
 
     let time = 0;
 
-    const tick = () => {
+    const tick = (now: number) => {
       if (!running) return;
-      time += 0.016;
+
+      // Throttle to 30fps
+      if (now - lastFrame < FRAME_INTERVAL) {
+        requestAnimationFrame(tick);
+        return;
+      }
+      lastFrame = now;
+      time += 0.033;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const sy = scrollY.current;
@@ -121,8 +130,8 @@ export default function CosmicBackground() {
         ctx.fillStyle = `rgba(191, 219, 254, ${alpha})`;
         ctx.fill();
 
-        // Subtle glow for bigger stars
-        if (s.size > 1.2) {
+        // Subtle glow only for the biggest stars
+        if (s.size > 1.5) {
           ctx.beginPath();
           ctx.arc(s.x, py, s.size * 3, 0, Math.PI * 2);
           const g = ctx.createRadialGradient(s.x, py, 0, s.x, py, s.size * 3);

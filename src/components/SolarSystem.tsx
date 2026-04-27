@@ -21,17 +21,17 @@ interface PlanetProps {
   ringColor?: string;
 }
 
-const PLANET_GEO = new THREE.SphereGeometry(1, 12, 12);
-const MOON_GEO = new THREE.SphereGeometry(1, 8, 8);
-const SUN_GEO = new THREE.SphereGeometry(1.5, 20, 20);
-const RING_GEO = new THREE.RingGeometry(1.4, 2.2, 32);
+const PLANET_GEO = new THREE.SphereGeometry(1, 10, 10);
+const MOON_GEO = new THREE.SphereGeometry(1, 6, 6);
+const SUN_GEO = new THREE.SphereGeometry(1.5, 14, 14);
+const RING_GEO = new THREE.RingGeometry(1.4, 2.2, 20);
 RING_GEO.rotateX(-Math.PI / 2);
 
 function OrbitRing({ radius }: { radius: number }) {
   const line = useMemo(() => {
     const pts = [];
-    for (let i = 0; i <= 48; i++) {
-      const a = (i / 48) * Math.PI * 2;
+    for (let i = 0; i <= 32; i++) {
+      const a = (i / 32) * Math.PI * 2;
       pts.push(new THREE.Vector3(Math.cos(a) * radius, 0, Math.sin(a) * radius));
     }
     const geo = new THREE.BufferGeometry().setFromPoints(pts);
@@ -45,8 +45,8 @@ function OrbitRing({ radius }: { radius: number }) {
 function MoonOrbitRing({ radius }: { radius: number }) {
   const line = useMemo(() => {
     const pts = [];
-    for (let i = 0; i <= 32; i++) {
-      const a = (i / 32) * Math.PI * 2;
+    for (let i = 0; i <= 20; i++) {
+      const a = (i / 20) * Math.PI * 2;
       pts.push(new THREE.Vector3(Math.cos(a) * radius, 0, Math.sin(a) * radius));
     }
     const geo = new THREE.BufferGeometry().setFromPoints(pts);
@@ -112,8 +112,8 @@ function Planet({ radius, orbitRadius, speed, color, moons, hasRings, ringColor 
 
 function StaticStars() {
   const geo = useMemo(() => {
-    const positions = new Float32Array(800 * 3);
-    for (let i = 0; i < 800; i++) {
+    const positions = new Float32Array(500 * 3);
+    for (let i = 0; i < 500; i++) {
       positions[i * 3] = (Math.random() - 0.5) * 160;
       positions[i * 3 + 1] = (Math.random() - 0.5) * 160;
       positions[i * 3 + 2] = (Math.random() - 0.5) * 160;
@@ -234,7 +234,7 @@ export default function SolarSystem() {
         camera={{ position: [0, 12, 20], fov: 60 }}
         style={{ background: "#020617" }}
         dpr={[1, 1.5]}
-        gl={{ antialias: false, powerPreference: "high-performance" }}
+        gl={{ antialias: false, powerPreference: "high-performance", alpha: false, stencil: false, depth: true }}
         frameloop={visible ? "always" : "never"}
       >
         <StaticStars />
