@@ -44,6 +44,7 @@ export default function Navbar() {
             <a
               key={item.href}
               href={item.href}
+              onClick={() => window.dispatchEvent(new Event("warp-navigate"))}
               className="text-sm text-slate-300 hover:text-blue-400 transition-colors duration-200 relative group"
             >
               {item.label}
@@ -82,7 +83,7 @@ export default function Navbar() {
                 <a
                   key={item.href}
                   href={item.href}
-                  onClick={() => setMobileOpen(false)}
+                  onClick={() => { setMobileOpen(false); window.dispatchEvent(new Event("warp-navigate")); }}
                   className="text-slate-300 hover:text-blue-400 transition-colors"
                 >
                   {item.label}

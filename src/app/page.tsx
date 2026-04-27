@@ -13,6 +13,7 @@ import ScrollProgress from "@/components/ScrollProgress";
 import CosmicBackground from "@/components/CosmicBackground";
 import RocketToTop from "@/components/RocketToTop";
 import NebulaDivider from "@/components/NebulaDivider";
+import WarpTransition from "@/components/WarpTransition";
 
 export default function Home() {
   return (
@@ -21,6 +22,7 @@ export default function Home() {
       <SpotlightCursor />
       <ShootingStarCursor />
       <ScrollProgress />
+      <WarpTransition />
       <RocketToTop />
       <Navbar />
       <Hero />

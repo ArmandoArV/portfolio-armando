@@ -4,6 +4,25 @@ import { experiences } from "@/data/portfolio";
 import AnimatedSection from "./AnimatedSection";
 import TextScramble from "./TextScramble";
 
+const COMPANY_PLANETS: Record<string, { bg: string; ring?: string; size?: string }> = {
+  "Microsoft": {
+    bg: "bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600",
+    ring: "ring-blue-400/30",
+  },
+  "Siemens Digital Industries": {
+    bg: "bg-gradient-to-br from-teal-400 to-emerald-600",
+    ring: "ring-teal-400/30",
+  },
+  "Tecnocontrol Vehicular": {
+    bg: "bg-gradient-to-br from-orange-400 via-red-400 to-red-600",
+    ring: "ring-orange-400/30",
+  },
+  "Sonder.mut": {
+    bg: "bg-gradient-to-br from-purple-400 via-violet-500 to-indigo-600",
+    ring: "ring-purple-400/30",
+  },
+};
+
 export default function Experience() {
   return (
     <div id="experience" className="max-w-5xl mx-auto px-6 py-20">
@@ -21,7 +40,11 @@ export default function Experience() {
             <li key={exp.company} className="mb-12 last:mb-0">
               <AnimatedSection delay={i * 0.1}>
                 <div className="relative pl-8 md:pl-20 lg:group-hover/list:opacity-50 hover:!opacity-100 transition-opacity duration-300">
-                  <div className="absolute left-0 md:left-8 top-6 w-3 h-3 -translate-x-[6px] rounded-full bg-blue-400 ring-4 ring-slate-950" />
+                  <div className="absolute left-0 md:left-8 top-5 -translate-x-[7px]">
+                    <div className={`w-4 h-4 rounded-full ${(COMPANY_PLANETS[exp.company]?.bg) || "bg-blue-400"} shadow-lg shadow-blue-500/20 ring-2 ${COMPANY_PLANETS[exp.company]?.ring || "ring-blue-400/30"} ring-offset-2 ring-offset-slate-950`}>
+                      <div className="absolute inset-0 rounded-full bg-white/20 blur-[1px]" style={{ clipPath: "inset(0 50% 0 0)" }} />
+                    </div>
+                  </div>
 
                   <div className="group/card relative">
                     <div className="absolute -inset-x-4 -inset-y-4 z-0 hidden rounded-lg transition-all duration-200 lg:-inset-x-6 lg:block lg:group-hover/card:bg-slate-800/50 lg:group-hover/card:shadow-[inset_0_1px_0_0_rgba(148,163,184,0.1)] lg:group-hover/card:drop-shadow-lg" />
