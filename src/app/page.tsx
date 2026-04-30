@@ -7,6 +7,7 @@ import SpotlightCursor from "@/components/SpotlightCursor";
 import ShootingStarCursor from "@/components/ShootingStarCursor";
 import CosmicBackground from "@/components/CosmicBackground";
 import AstronautConcierge from "@/components/AstronautConcierge";
+import ResumeButton from "@/components/ResumeButton";
 
 const GalaxyExplorer = dynamic(() => import("@/components/GalaxyExplorer"), {
   ssr: false,
@@ -34,6 +35,7 @@ export default function Home() {
         <GalaxyExplorer />
       </main>
       <AstronautConcierge />
+      <ResumeButton />
       <FloatingAstronaut />
     </>
   );

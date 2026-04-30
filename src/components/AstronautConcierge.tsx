@@ -7,13 +7,85 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTerminal, faTimes } from "@fortawesome/free-solid-svg-icons";
 
+/* ── Easter egg responses ── */
+interface LocalMsg {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+  isHtml?: boolean;
+}
+
+const NEOFETCH = `\x1b[34m       ▄▄▄▄▄▄▄       \x1b[0mvisitor@portfolio
+\x1b[34m    ▄▀         ▀▄    \x1b[0m─────────────────
+\x1b[34m  ▄▀    ●   ●    ▀▄  \x1b[0mOS: PortfolioOS 2.0.26 LTS
+\x1b[34m ▄▀                ▀▄ \x1b[0mHost: Microsoft Azure / Vercel
+\x1b[34m █   ▀▀▀▀▀▀▀▀▀▀▀   █ \x1b[0mKernel: Next.js 16.2.4
+\x1b[34m █                  █ \x1b[0mShell: React 19 + TypeScript
+\x1b[34m ▀▄  ▄▄▄▄▄▄▄▄▄▄  ▄▀ \x1b[0mDE: Three.js 0.184
+\x1b[34m   ▀▄            ▄▀  \x1b[0mTheme: Space Universe [dark]
+\x1b[34m     ▀▀▀▀▀▀▀▀▀▀▀     \x1b[0mEngine: Azure OpenAI (gpt-4.1-mini)
+                        CPU: Vercel Edge Runtime
+                        GPU: WebGL2 / R3F
+                        Uptime: since 2025`;
+
+const EASTER_EGGS: Record<string, string | { text: string; action?: string }> = {
+  "sudo hire-me": {
+    text: `sudo: permission granted ✓
+
+┌──────────────────────────────────┐
+│  🚀 LET'S BUILD SOMETHING!      │
+│                                  │
+│  📧 contact@armandoav.com        │
+│  💼 linkedin.com/in/armando-av   │
+│  🐙 github.com/ArmandoArV       │
+│  🌐 armandoav.com                │
+│                                  │
+│  Status: Open to opportunities   │
+└──────────────────────────────────┘`,
+  },
+  "rm -rf /": "rm: cannot remove '/': Permission denied 😏\nThis universe is protected by cosmic firewalls.",
+  "rm -rf / --no-preserve-root": "Nice try, but even root can't destroy this universe 🛡️",
+  neofetch: NEOFETCH,
+  exit: "There is no escape from this universe 🚀\nTry exploring a planet instead!",
+  hack: {
+    text: `[sudo] password for visitor: ********
+Access granted...
+
+Initializing exploit framework...
+[██████████████████████████] 100%
+
+Just kidding 😄 No systems were harmed.
+But seriously, Armando does know offensive security (C).
+Type 'cat skills.txt' to see all his skills.`,
+  },
+  help: `Available commands:
+  whoami          — Who is Armando?
+  ls projects/    — List projects
+  cat skills.txt  — Show technical skills
+  cat contact.txt — Show contact info
+  cat resume.pdf  — Download resume
+  neofetch        — System info
+  sudo hire-me    — Hire Armando
+  hack            — Try to hack the system
+  rm -rf /        — Try to delete everything
+  clear           — Clear terminal
+  exit            — Try to exit
+  help            — Show this help
+
+Or just ask me anything in natural language!`,
+  "cat resume.pdf": { text: "Downloading resume...", action: "download-resume" },
+};
+
+let localIdCounter = 0;
+
 export default function AstronautConcierge() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
+  const [localMessages, setLocalMessages] = useState<LocalMsg[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { messages, sendMessage, status, error } = useChat({
+  const { messages, sendMessage, status, error, setMessages } = useChat({
     transport: new DefaultChatTransport({ api: "/api/chat" }),
     onToolCall({ toolCall }) {
       if (toolCall.toolName === "navigate") {
@@ -39,7 +111,7 @@ export default function AstronautConcierge() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isLoading]);
+  }, [messages, localMessages, isLoading]);
 
   useEffect(() => {
     if (isOpen) {
@@ -49,24 +121,92 @@ export default function AstronautConcierge() {
 
   const toggle = useCallback(() => setIsOpen((p) => !p), []);
 
+  const addLocalMessage = useCallback((role: "user" | "assistant", text: string) => {
+    const id = `local-${++localIdCounter}`;
+    setLocalMessages((prev) => [...prev, { id, role, text }]);
+  }, []);
+
   const handleSubmit = useCallback(
     (e?: { preventDefault?: () => void }) => {
       e?.preventDefault?.();
       const text = input.trim();
       if (!text || isLoading) return;
       setInput("");
+
+      const cmd = text.toLowerCase();
+
+      // Handle clear
+      if (cmd === "clear") {
+        setLocalMessages([]);
+        setMessages([]);
+        return;
+      }
+
+      // Check easter eggs
+      const egg = EASTER_EGGS[cmd];
+      if (egg) {
+        addLocalMessage("user", text);
+        const response = typeof egg === "string" ? egg : egg.text;
+        setTimeout(() => {
+          addLocalMessage("assistant", response);
+          if (typeof egg === "object" && egg.action === "download-resume") {
+            const link = document.createElement("a");
+            link.href = "/Armando_Arredondo_Valle_Resume.pdf";
+            link.download = "Armando_Arredondo_Valle_Resume.pdf";
+            link.click();
+          }
+        }, 300);
+        return;
+      }
+
+      // Normal AI message
       sendMessage({ text });
     },
-    [input, isLoading, sendMessage]
+    [input, isLoading, sendMessage, addLocalMessage, setMessages]
   );
 
   const sendQuickPrompt = useCallback(
     (prompt: string) => {
       if (isLoading) return;
+      const cmd = prompt.toLowerCase();
+      const egg = EASTER_EGGS[cmd];
+      if (egg) {
+        addLocalMessage("user", prompt);
+        const response = typeof egg === "string" ? egg : egg.text;
+        setTimeout(() => addLocalMessage("assistant", response), 300);
+        return;
+      }
       sendMessage({ text: prompt });
     },
-    [isLoading, sendMessage]
+    [isLoading, sendMessage, addLocalMessage]
   );
+
+  // Merge local + AI messages by insertion order
+  const allMessages = [
+    ...localMessages.map((m) => ({
+      id: m.id,
+      role: m.role,
+      source: "local" as const,
+      text: m.text,
+    })),
+    ...messages
+      .filter(
+        (msg) =>
+          !(
+            msg.role === "assistant" &&
+            msg.parts?.every((p) => p.type === "tool-invocation")
+          )
+      )
+      .map((msg) => ({
+        id: msg.id,
+        role: msg.role as "user" | "assistant",
+        source: "ai" as const,
+        text: msg.parts
+          .filter((p) => p.type === "text")
+          .map((p) => (p.type === "text" ? p.text : ""))
+          .join(""),
+      })),
+  ];
 
   return (
     <>
@@ -96,7 +236,6 @@ export default function AstronautConcierge() {
           >
             {/* ── Title bar ── */}
             <div className="flex items-center h-9 px-3 bg-slate-800/95 backdrop-blur-sm border-b border-slate-700/50 select-none">
-              {/* Traffic lights */}
               <div className="flex items-center gap-[7px]">
                 <button
                   onClick={toggle}
@@ -110,7 +249,6 @@ export default function AstronautConcierge() {
                 <div className="w-[13px] h-[13px] rounded-full bg-yellow-500" />
                 <div className="w-[13px] h-[13px] rounded-full bg-green-500" />
               </div>
-              {/* Title */}
               <div className="flex-1 text-center">
                 <span className="text-[12px] text-slate-400 font-mono">
                   armando@portfolio: ~
@@ -125,7 +263,7 @@ export default function AstronautConcierge() {
               className="flex-1 overflow-y-auto bg-slate-950/95 backdrop-blur-md px-3 py-3 font-mono text-[13px] leading-relaxed scrollbar-thin scrollbar-thumb-blue-500/20"
             >
               {/* Boot message */}
-              {messages.length === 0 && (
+              {allMessages.length === 0 && (
                 <div className="space-y-1 mb-3">
                   <p className="text-green-500/70">
                     GNU/Portfolio 2.0.26 LTS (Armando Arredondo Valle)
@@ -143,25 +281,15 @@ export default function AstronautConcierge() {
                     Last login: {new Date().toUTCString()}
                   </p>
                   <p className="text-green-500/70 mt-2">
-                    Type a command or ask me anything about Armando.
+                    Type a command or ask anything. Try{" "}
+                    <span className="text-green-300">help</span> for commands.
                   </p>
                 </div>
               )}
 
-              {/* Messages */}
-              {messages.map((msg) => {
-                if (
-                  msg.role === "assistant" &&
-                  msg.parts &&
-                  msg.parts.every((p) => p.type === "tool-invocation")
-                ) {
-                  return null;
-                }
-
-                const isUser = msg.role === "user";
-                const textParts = msg.parts.filter((p) => p.type === "text");
-
-                if (isUser) {
+              {/* All messages (local + AI) */}
+              {allMessages.map((msg) => {
+                if (msg.role === "user") {
                   return (
                     <div key={msg.id} className="mb-1">
                       <span className="text-green-400 font-bold">
@@ -170,23 +298,16 @@ export default function AstronautConcierge() {
                       <span className="text-slate-500">:</span>
                       <span className="text-indigo-400 font-bold">~</span>
                       <span className="text-slate-500">$ </span>
-                      <span className="text-green-300">
-                        {textParts.map((p) => (p.type === "text" ? p.text : "")).join("")}
-                      </span>
+                      <span className="text-green-300">{msg.text}</span>
                     </div>
                   );
                 }
 
                 return (
                   <div key={msg.id} className="mb-3 pl-0">
-                    {textParts.map((p, i) => (
-                      <p
-                        key={i}
-                        className="text-green-300/90 whitespace-pre-wrap"
-                      >
-                        {p.type === "text" ? p.text : ""}
-                      </p>
-                    ))}
+                    <p className="text-green-300/90 whitespace-pre-wrap">
+                      {msg.text}
+                    </p>
                   </div>
                 );
               })}
@@ -223,7 +344,8 @@ export default function AstronautConcierge() {
                 { cmd: "whoami", label: "whoami" },
                 { cmd: "ls projects/", label: "ls projects/" },
                 { cmd: "cat skills.txt", label: "cat skills.txt" },
-                { cmd: "cat contact.txt", label: "cat contact.txt" },
+                { cmd: "neofetch", label: "neofetch" },
+                { cmd: "help", label: "help" },
               ].map(({ cmd, label }) => (
                 <button
                   key={cmd}
@@ -257,7 +379,6 @@ export default function AstronautConcierge() {
                 autoComplete="off"
                 spellCheck={false}
               />
-              {/* Blinking cursor when input is empty and focused */}
               {!input && !isLoading && (
                 <span className="w-[7px] h-[14px] bg-green-400 animate-[blink_1s_steps(1)_infinite] shrink-0" />
               )}

@@ -9,11 +9,45 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Armando Arredondo Valle | Software Engineer",
-  description: "Software Engineer at Microsoft. Building cloud-native systems, AI solutions & real-time applications.",
+  metadataBase: new URL("https://www.armandoav.com"),
+  title: "Armando Arredondo Valle | Software Engineer at Microsoft",
+  description:
+    "Software Engineer at Microsoft building cloud-native systems, AI solutions & real-time applications. React, Azure, .NET, Go, TypeScript. Explore my interactive 3D portfolio.",
+  keywords: [
+    "Armando Arredondo Valle",
+    "Software Engineer",
+    "Microsoft",
+    "React",
+    "Azure",
+    "TypeScript",
+    "Next.js",
+    ".NET",
+    "Go",
+    "AI",
+    "Machine Learning",
+    "Full Stack Developer",
+    "Cloud Engineer",
+  ],
+  authors: [{ name: "Armando Arredondo Valle", url: "https://www.armandoav.com" }],
+  creator: "Armando Arredondo Valle",
+  robots: { index: true, follow: true },
   openGraph: {
-    title: "Armando Arredondo Valle | Software Engineer",
-    description: "Software Engineer at Microsoft. React, Azure, Next.js, TypeScript.",
+    type: "website",
+    locale: "en_US",
+    url: "https://www.armandoav.com",
+    siteName: "Armando Arredondo Valle",
+    title: "Armando Arredondo Valle | Software Engineer at Microsoft",
+    description:
+      "Software Engineer at Microsoft. React, Azure, .NET, Go, TypeScript. Interactive 3D portfolio with AI concierge.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Armando Arredondo Valle | Software Engineer at Microsoft",
+    description:
+      "Interactive 3D portfolio — explore planets, talk to an AI concierge, and discover my work at Microsoft.",
+  },
+  icons: {
+    icon: "/favicon.ico",
   },
 };
 
