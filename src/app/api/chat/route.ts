@@ -2,10 +2,18 @@ import { streamText, tool, zodSchema, convertToModelMessages } from "ai";
 import { createAzure } from "@ai-sdk/azure";
 import { z } from "zod";
 
-const azure = createAzure({
-  resourceName: process.env.AZURE_OPENAI_RESOURCE!,
-  apiKey: process.env.AZURE_OPENAI_API_KEY!,
-});
+function getAzureModel() {
+  const resource = process.env.AZURE_OPENAI_RESOURCE;
+  const apiKey = process.env.AZURE_OPENAI_API_KEY;
+  const deployment = process.env.AZURE_OPENAI_DEPLOYMENT;
+
+  if (!resource || !apiKey || !deployment) {
+    return null;
+  }
+
+  const azure = createAzure({ resourceName: resource, apiKey });
+  return azure(deployment);
+}
 
 const SYSTEM_PROMPT = `You are the AI concierge on Armando Arredondo Valle's portfolio website. You float around as a friendly astronaut in a 3D solar system where each planet represents a section of Armando's portfolio. You speak in first person as if you know Armando personally — warm, conversational, technically precise. Answer in the same language the user writes in (Spanish or English).
 
@@ -198,12 +206,23 @@ export async function POST(req: Request) {
 
   const { messages: uiMessages } = await req.json();
 
-  const modelMessages = convertToModelMessages(uiMessages);
+  const model = getAzureModel();
+  if (!model) {
+    return new Response(
+      JSON.stringify({
+        error:
+          "AI concierge is not configured yet. Set AZURE_OPENAI_RESOURCE, AZURE_OPENAI_API_KEY, and AZURE_OPENAI_DEPLOYMENT environment variables.",
+      }),
+      { status: 503, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  const modelMessages = await convertToModelMessages(uiMessages);
 
   const result = streamText({
-    model: azure(process.env.AZURE_OPENAI_DEPLOYMENT!),
+    model,
     system: SYSTEM_PROMPT,
-    messages: await modelMessages,
+    messages: modelMessages,
     tools: {
       navigate: tool({
         description:

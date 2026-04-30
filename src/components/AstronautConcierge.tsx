@@ -33,6 +33,9 @@ export default function AstronautConcierge() {
         }, 400);
       }
     },
+    onError(error) {
+      console.error("Chat error:", error);
+    },
   });
 
   const isLoading = status === "streaming" || status === "submitted";
