@@ -85,10 +85,10 @@ export default function Hero() {
         >
           <MagneticButton>
           <a
-            href="#experience"
+            href="#explore"
             className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full font-medium hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:scale-105 flex items-center gap-2"
           >
-            View My Work <FontAwesomeIcon icon={faArrowRight} className="w-4 h-4" />
+            Explore My Universe <FontAwesomeIcon icon={faArrowRight} className="w-4 h-4" />
           </a>
           </MagneticButton>
           <MagneticButton>

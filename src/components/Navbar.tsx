@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const NAV_ITEMS = [
-  { label: "Experience", href: "#experience" },
-  { label: "Education", href: "#education" },
-  { label: "Projects", href: "#projects" },
-  { label: "Skills", href: "#skills" },
-  { label: "Publications", href: "#publications" },
-  { label: "Contact", href: "#contact" },
+  { label: "Experience", planet: "earth" },
+  { label: "Education", planet: "venus" },
+  { label: "Projects", planet: "mars" },
+  { label: "Skills", planet: "jupiter" },
+  { label: "Publications", planet: "saturn" },
+  { label: "Contact", planet: "mercury" },
 ];
 
 export default function Navbar() {
@@ -41,15 +41,19 @@ export default function Navbar() {
         {/* Desktop */}
         <div className="hidden md:flex gap-8">
           {NAV_ITEMS.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              onClick={() => window.dispatchEvent(new Event("warp-navigate"))}
+            <button
+              key={item.planet}
+              onClick={() => {
+                document.getElementById("explore")?.scrollIntoView({ behavior: "smooth" });
+                setTimeout(() => {
+                  window.dispatchEvent(new CustomEvent("navigate-planet", { detail: item.planet }));
+                }, 300);
+              }}
               className="text-sm text-slate-300 hover:text-blue-400 transition-colors duration-200 relative group"
             >
               {item.label}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-400 transition-all duration-300 group-hover:w-full" />
-            </a>
+            </button>
           ))}
         </div>
 
@@ -80,14 +84,19 @@ export default function Navbar() {
           >
             <div className="px-6 py-4 flex flex-col gap-4">
               {NAV_ITEMS.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => { setMobileOpen(false); window.dispatchEvent(new Event("warp-navigate")); }}
-                  className="text-slate-300 hover:text-blue-400 transition-colors"
+                <button
+                  key={item.planet}
+                  onClick={() => {
+                    setMobileOpen(false);
+                    document.getElementById("explore")?.scrollIntoView({ behavior: "smooth" });
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent("navigate-planet", { detail: item.planet }));
+                    }, 300);
+                  }}
+                  className="text-left text-slate-300 hover:text-blue-400 transition-colors"
                 >
                   {item.label}
-                </a>
+                </button>
               ))}
             </div>
           </motion.div>
