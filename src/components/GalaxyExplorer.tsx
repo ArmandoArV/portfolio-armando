@@ -63,6 +63,42 @@ const STAR_MAT = new THREE.PointsMaterial({
   transparent: true,
   opacity: 0.7,
 });
+const MOON_GEO = new THREE.SphereGeometry(1, 12, 12);
+
+/* ── Moon definitions per planet ── */
+interface MoonDef {
+  name: string;
+  radius: number;
+  orbitRadius: number;
+  speed: number;
+  color: string;
+  initialAngle: number;
+  tilt?: number;
+}
+
+const PLANET_MOONS: Record<string, MoonDef[]> = {
+  earth: [
+    { name: "Luna", radius: 0.07, orbitRadius: 0.7, speed: 0.6, color: "#c8c8c8", initialAngle: 0 },
+  ],
+  mars: [
+    { name: "Phobos", radius: 0.035, orbitRadius: 0.5, speed: 1.2, color: "#a08060", initialAngle: 0 },
+    { name: "Deimos", radius: 0.025, orbitRadius: 0.7, speed: 0.7, color: "#b09070", initialAngle: Math.PI },
+  ],
+  jupiter: [
+    { name: "Io", radius: 0.06, orbitRadius: 1.0, speed: 0.9, color: "#e8d050", initialAngle: 0 },
+    { name: "Europa", radius: 0.055, orbitRadius: 1.3, speed: 0.7, color: "#d0ccc0", initialAngle: Math.PI * 0.5 },
+    { name: "Ganymede", radius: 0.07, orbitRadius: 1.6, speed: 0.5, color: "#a09880", initialAngle: Math.PI },
+    { name: "Callisto", radius: 0.065, orbitRadius: 1.9, speed: 0.35, color: "#706858", initialAngle: Math.PI * 1.5 },
+  ],
+  saturn: [
+    { name: "Titan", radius: 0.08, orbitRadius: 1.8, speed: 0.4, color: "#d0a840", initialAngle: 0, tilt: 0.3 },
+    { name: "Enceladus", radius: 0.035, orbitRadius: 1.3, speed: 0.8, color: "#f0f0ff", initialAngle: Math.PI * 0.7 },
+    { name: "Mimas", radius: 0.03, orbitRadius: 1.1, speed: 1.0, color: "#c0c0c0", initialAngle: Math.PI * 1.3 },
+  ],
+  neptune: [
+    { name: "Triton", radius: 0.06, orbitRadius: 0.7, speed: -0.5, color: "#8090b0", initialAngle: 0, tilt: 0.5 },
+  ],
+};
 
 /* ── Orbit ring ── */
 function OrbitRing({ radius }: { radius: number }) {
@@ -139,6 +175,39 @@ function Highlight({
   );
 }
 
+/* ── Moon ── */
+function Moon({ moon }: { moon: MoonDef }) {
+  const ref = useRef<THREE.Mesh>(null!);
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    const angle = moon.initialAngle + t * moon.speed;
+    const y = moon.tilt ? Math.sin(angle) * moon.tilt * moon.orbitRadius * 0.3 : 0;
+    ref.current.position.set(
+      Math.cos(angle) * moon.orbitRadius,
+      y,
+      Math.sin(angle) * moon.orbitRadius
+    );
+  });
+  return (
+    <mesh ref={ref} geometry={MOON_GEO} scale={moon.radius}>
+      <meshStandardMaterial color={moon.color} roughness={0.9} metalness={0.05} />
+    </mesh>
+  );
+}
+
+/* ── Moons group for a planet ── */
+function PlanetMoons({ planetId }: { planetId: string }) {
+  const moons = PLANET_MOONS[planetId];
+  if (!moons) return null;
+  return (
+    <>
+      {moons.map((m) => (
+        <Moon key={m.name} moon={m} />
+      ))}
+    </>
+  );
+}
+
 /* ── Generic interactive planet ── */
 function InteractivePlanet({
   def,
@@ -197,6 +266,7 @@ function InteractivePlanet({
         {(isActive || hovered) && (
           <Highlight scale={def.radius} active={isActive} />
         )}
+        <PlanetMoons planetId={def.id} />
       </group>
     </>
   );
@@ -275,6 +345,7 @@ function InteractiveEarth({
         {(isActive || hovered) && (
           <Highlight scale={def.radius} active={isActive} />
         )}
+        <PlanetMoons planetId="earth" />
       </group>
     </>
   );
@@ -354,12 +425,13 @@ function InteractiveSaturn({
         {(isActive || hovered) && (
           <Highlight scale={def.radius} active={isActive} />
         )}
+        <PlanetMoons planetId="saturn" />
       </group>
     </>
   );
 }
 
-/* ── Camera controller (lerp-based) ── */
+/* ── Camera controller(lerp-based) ── */
 const OVERVIEW_POS = new THREE.Vector3(0, 10, 15);
 const OVERVIEW_TARGET = new THREE.Vector3(0, 0, 0);
 
