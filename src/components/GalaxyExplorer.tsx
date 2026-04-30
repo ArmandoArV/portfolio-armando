@@ -522,6 +522,8 @@ function PlanetLabel({
     }
   });
 
+  if (activePlanet) return null;
+
   return (
     <group ref={groupRef}>
       <Html center distanceFactor={12} style={{ pointerEvents: "auto" }}>
