@@ -12,6 +12,11 @@ const GalaxyExplorer = dynamic(() => import("@/components/GalaxyExplorer"), {
   ssr: false,
 });
 
+const FloatingAstronaut = dynamic(
+  () => import("@/components/FloatingAstronaut"),
+  { ssr: false }
+);
+
 export default function Home() {
   return (
     <>
@@ -24,6 +29,7 @@ export default function Home() {
         <GalaxyExplorer />
       </main>
       <AstronautConcierge />
+      <FloatingAstronaut />
     </>
   );
 }

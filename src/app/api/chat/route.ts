@@ -1,4 +1,4 @@
-import { streamText, tool, zodSchema } from "ai";
+import { streamText, tool, zodSchema, convertToModelMessages } from "ai";
 import { createAzure } from "@ai-sdk/azure";
 import { z } from "zod";
 
@@ -196,12 +196,14 @@ export async function POST(req: Request) {
     );
   }
 
-  const { messages } = await req.json();
+  const { messages: uiMessages } = await req.json();
+
+  const modelMessages = convertToModelMessages(uiMessages);
 
   const result = streamText({
     model: azure(process.env.AZURE_OPENAI_DEPLOYMENT!),
     system: SYSTEM_PROMPT,
-    messages,
+    messages: await modelMessages,
     tools: {
       navigate: tool({
         description:
