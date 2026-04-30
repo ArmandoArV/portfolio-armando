@@ -1,0 +1,42 @@
+"use client";
+
+import dynamic from "next/dynamic";
+import Navbar from "@/components/Navbar";
+import Hero from "@/components/Hero";
+import SpotlightCursor from "@/components/SpotlightCursor";
+import ShootingStarCursor from "@/components/ShootingStarCursor";
+import CosmicBackground from "@/components/CosmicBackground";
+import AstronautConcierge from "@/components/AstronautConcierge";
+import ResumeButton from "@/components/ResumeButton";
+
+const GalaxyExplorer = dynamic(() => import("@/components/GalaxyExplorer"), {
+  ssr: false,
+});
+
+const FloatingAstronaut = dynamic(
+  () => import("@/components/FloatingAstronaut"),
+  { ssr: false }
+);
+
+const IntroOverlay = dynamic(() => import("@/components/IntroOverlay"), {
+  ssr: false,
+});
+
+export default function HomeClient() {
+  return (
+    <>
+      <IntroOverlay />
+      <CosmicBackground />
+      <SpotlightCursor />
+      <ShootingStarCursor />
+      <Navbar />
+      <Hero />
+      <main>
+        <GalaxyExplorer />
+      </main>
+      <AstronautConcierge />
+      <ResumeButton />
+      <FloatingAstronaut />
+    </>
+  );
+}

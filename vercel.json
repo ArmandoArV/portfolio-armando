@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "armandoav.com" }],
+      "destination": "https://www.armandoav.com/$1",
+      "permanent": true
+    }
+  ]
+}

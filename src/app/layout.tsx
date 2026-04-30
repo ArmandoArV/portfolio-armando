@@ -10,6 +10,9 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.armandoav.com"),
+  alternates: {
+    canonical: "https://www.armandoav.com",
+  },
   title: "Armando Arredondo Valle | Software Engineer at Microsoft",
   description:
     "Software Engineer at Microsoft building cloud-native systems, AI solutions & real-time applications. React, Azure, .NET, Go, TypeScript. Explore my interactive 3D portfolio.",
