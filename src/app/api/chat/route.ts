@@ -242,6 +242,9 @@ export async function POST(req: Request) {
               .describe("The planet to navigate to"),
           })
         ),
+        execute: async ({ planet }) => {
+          return `Navigated user to ${planet}`;
+        },
       }),
     },
   });
