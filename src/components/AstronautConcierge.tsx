@@ -5,12 +5,7 @@ import { DefaultChatTransport } from "ai";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faPaperPlane,
-  faTimes,
-  faUserAstronaut,
-  faRocket,
-} from "@fortawesome/free-solid-svg-icons";
+import { faTerminal, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 export default function AstronautConcierge() {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,14 +35,12 @@ export default function AstronautConcierge() {
 
   const isLoading = status === "streaming" || status === "submitted";
 
-  // Auto-scroll on new messages
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isLoading]);
 
-  // Focus input when opened
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 300);
@@ -77,21 +70,21 @@ export default function AstronautConcierge() {
 
   return (
     <>
-      {/* Floating astronaut button */}
+      {/* Floating terminal button */}
       <motion.button
         onClick={toggle}
-        className="fixed bottom-6 left-6 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/30 flex items-center justify-center hover:scale-110 transition-transform"
-        whileHover={{ rotate: [0, -10, 10, 0] }}
+        className="fixed bottom-6 left-6 z-40 w-14 h-14 rounded-full bg-[#300a24] border-2 border-[#77216f] text-[#e95420] shadow-lg shadow-[#77216f]/30 flex items-center justify-center hover:scale-110 hover:border-[#e95420] transition-all"
+        whileHover={{ rotate: [0, -5, 5, 0] }}
         whileTap={{ scale: 0.9 }}
-        aria-label="Open AI concierge"
+        aria-label="Open terminal"
       >
         <FontAwesomeIcon
-          icon={isOpen ? faTimes : faUserAstronaut}
+          icon={isOpen ? faTimes : faTerminal}
           className="w-6 h-6"
         />
       </motion.button>
 
-      {/* Chat drawer */}
+      {/* Terminal window */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -99,168 +92,176 @@ export default function AstronautConcierge() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-24 left-6 z-40 w-[380px] max-w-[calc(100vw-3rem)] h-[520px] max-h-[calc(100vh-8rem)] bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/40 flex flex-col overflow-hidden"
+            className="fixed bottom-24 left-6 z-40 w-[420px] max-w-[calc(100vw-3rem)] h-[520px] max-h-[calc(100vh-8rem)] rounded-xl shadow-2xl shadow-black/60 flex flex-col overflow-hidden border border-[#3d3d3d]"
           >
-            {/* Header */}
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/50 bg-gradient-to-r from-indigo-500/10 to-purple-500/10">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center">
-                <FontAwesomeIcon
-                  icon={faUserAstronaut}
-                  className="w-4 h-4 text-white"
-                />
+            {/* ── Ubuntu title bar ── */}
+            <div className="flex items-center h-9 px-3 bg-[#2c2c2c] border-b border-[#1a1a1a] select-none">
+              {/* Traffic lights */}
+              <div className="flex items-center gap-[7px]">
+                <button
+                  onClick={toggle}
+                  className="w-[13px] h-[13px] rounded-full bg-[#ef5350] hover:brightness-110 transition-all group relative"
+                  aria-label="Close"
+                >
+                  <span className="opacity-0 group-hover:opacity-100 absolute inset-0 flex items-center justify-center text-[8px] text-black/70 font-bold">
+                    ×
+                  </span>
+                </button>
+                <div className="w-[13px] h-[13px] rounded-full bg-[#ffb74d]" />
+                <div className="w-[13px] h-[13px] rounded-full bg-[#66bb6a]" />
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-white">
-                  Space Concierge
-                </p>
-                <p className="text-[11px] text-slate-400">
-                  Ask me anything about Armando
-                </p>
+              {/* Title */}
+              <div className="flex-1 text-center">
+                <span className="text-[12px] text-[#aaaaaa] font-mono">
+                  armando@portfolio: ~
+                </span>
               </div>
-              <button
-                onClick={toggle}
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                <FontAwesomeIcon icon={faTimes} className="w-4 h-4" />
-              </button>
+              <div className="w-[60px]" />
             </div>
 
-            {/* Messages */}
+            {/* ── Terminal body ── */}
             <div
               ref={scrollRef}
-              className="flex-1 overflow-y-auto px-4 py-3 space-y-3 scrollbar-thin"
+              className="flex-1 overflow-y-auto bg-[#300a24] px-3 py-3 font-mono text-[13px] leading-relaxed scrollbar-thin scrollbar-thumb-[#77216f]/40"
             >
-              {/* Welcome message */}
+              {/* Boot message */}
               {messages.length === 0 && (
-                <div className="flex gap-2">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <FontAwesomeIcon
-                      icon={faRocket}
-                      className="w-3 h-3 text-white"
-                    />
-                  </div>
-                  <div className="bg-slate-800/80 rounded-2xl rounded-tl-sm px-3 py-2 max-w-[85%]">
-                    <p className="text-sm text-slate-200">
-                      Hey! 👋 I&apos;m Armando&apos;s AI concierge. Ask me
-                      anything — what technologies he uses, his projects, work
-                      experience, or just say &quot;take me to his
-                      projects&quot; and I&apos;ll fly you there!
-                    </p>
-                  </div>
+                <div className="space-y-1 mb-3">
+                  <p className="text-[#999]">
+                    GNU/Portfolio 2.0.26 LTS (Armando Arredondo Valle)
+                  </p>
+                  <p className="text-[#999]">
+                    * Documentation:&nbsp;
+                    <span className="text-[#729fcf]">
+                      https://armandoav.com
+                    </span>
+                  </p>
+                  <p className="text-[#999]">
+                    * System: Microsoft Azure / Next.js / Three.js
+                  </p>
+                  <p className="text-[#999]">
+                    Last login: {new Date().toUTCString()}
+                  </p>
+                  <p className="text-[#999] mt-2">
+                    Type a command or ask me anything about Armando.
+                  </p>
                 </div>
               )}
 
+              {/* Messages */}
               {messages.map((msg) => {
                 if (
                   msg.role === "assistant" &&
                   msg.parts &&
-                  msg.parts.every(
-                    (p) => p.type === "tool-invocation"
-                  )
+                  msg.parts.every((p) => p.type === "tool-invocation")
                 ) {
                   return null;
                 }
 
                 const isUser = msg.role === "user";
-                return (
-                  <div
-                    key={msg.id}
-                    className={`flex gap-2 ${isUser ? "flex-row-reverse" : ""}`}
-                  >
-                    {!isUser && (
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <FontAwesomeIcon
-                          icon={faRocket}
-                          className="w-3 h-3 text-white"
-                        />
-                      </div>
-                    )}
-                    <div
-                      className={`rounded-2xl px-3 py-2 max-w-[85%] text-sm ${
-                        isUser
-                          ? "bg-indigo-500/20 border border-indigo-400/30 text-indigo-100 rounded-tr-sm"
-                          : "bg-slate-800/80 text-slate-200 rounded-tl-sm"
-                      }`}
-                    >
-                      {msg.parts
-                        .filter((p) => p.type === "text")
-                        .map((p, i) => (
-                          <p key={i} className="whitespace-pre-wrap">
-                            {p.type === "text" ? p.text : ""}
-                          </p>
-                        ))}
+                const textParts = msg.parts.filter((p) => p.type === "text");
+
+                if (isUser) {
+                  return (
+                    <div key={msg.id} className="mb-1">
+                      <span className="text-[#4e9a06] font-bold">
+                        visitor@portfolio
+                      </span>
+                      <span className="text-[#aaa]">:</span>
+                      <span className="text-[#729fcf] font-bold">~</span>
+                      <span className="text-[#aaa]">$ </span>
+                      <span className="text-[#eeeeec]">
+                        {textParts.map((p) => (p.type === "text" ? p.text : "")).join("")}
+                      </span>
                     </div>
+                  );
+                }
+
+                return (
+                  <div key={msg.id} className="mb-3 pl-0">
+                    {textParts.map((p, i) => (
+                      <p
+                        key={i}
+                        className="text-[#eeeeec] whitespace-pre-wrap"
+                      >
+                        {p.type === "text" ? p.text : ""}
+                      </p>
+                    ))}
                   </div>
                 );
               })}
 
-              {/* Loading indicator */}
+              {/* Loading cursor blink */}
               {isLoading && (
-                <div className="flex gap-2">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center flex-shrink-0">
-                    <FontAwesomeIcon
-                      icon={faRocket}
-                      className="w-3 h-3 text-white animate-bounce"
-                    />
-                  </div>
-                  <div className="bg-slate-800/80 rounded-2xl rounded-tl-sm px-4 py-3">
-                    <div className="flex gap-1.5">
-                      <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                      <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                      <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:300ms]" />
-                    </div>
-                  </div>
+                <div className="mb-1">
+                  <span className="text-[#4e9a06] font-bold">
+                    system@portfolio
+                  </span>
+                  <span className="text-[#aaa]">:</span>
+                  <span className="text-[#729fcf] font-bold">~</span>
+                  <span className="text-[#aaa]">$ </span>
+                  <span className="text-[#eeeeec] animate-pulse">
+                    processing
+                  </span>
+                  <span className="inline-block w-[7px] h-[14px] bg-[#eeeeec] ml-0.5 animate-[blink_1s_steps(1)_infinite]" />
                 </div>
               )}
 
               {/* Error */}
               {error && (
-                <div className="text-center text-xs text-red-400 bg-red-400/10 rounded-lg px-3 py-2">
-                  Something went wrong. Try again!
+                <div className="mb-2">
+                  <span className="text-[#ef2929]">
+                    bash: error: {error.message || "Something went wrong. Try again."}
+                  </span>
                 </div>
               )}
             </div>
 
-            {/* Quick prompts (when empty) */}
+            {/* Quick commands (when empty) */}
             {messages.length === 0 && (
-              <div className="px-4 pb-2 flex flex-wrap gap-1.5">
+              <div className="bg-[#300a24] px-3 pb-2 flex flex-wrap gap-1.5 font-mono">
                 {[
-                  "What does Armando do?",
-                  "Show me his projects",
-                  "Tech skills?",
-                  "How to contact him?",
-                ].map((prompt) => (
+                  { cmd: "whoami", label: "whoami" },
+                  { cmd: "ls projects/", label: "ls projects/" },
+                  { cmd: "cat skills.txt", label: "cat skills.txt" },
+                  { cmd: "cat contact.txt", label: "cat contact.txt" },
+                ].map(({ cmd, label }) => (
                   <button
-                    key={prompt}
-                    onClick={() => sendQuickPrompt(prompt)}
-                    className="text-[11px] px-2.5 py-1 rounded-full bg-slate-800/60 border border-slate-700/30 text-slate-300 hover:border-indigo-400/50 hover:text-indigo-300 transition-colors"
+                    key={cmd}
+                    onClick={() => sendQuickPrompt(cmd)}
+                    className="text-[11px] px-2 py-0.5 rounded bg-[#3d3d3d]/60 border border-[#555]/40 text-[#8ae234] hover:border-[#e95420] hover:text-[#e95420] transition-colors"
                   >
-                    {prompt}
+                    $ {label}
                   </button>
                 ))}
               </div>
             )}
 
-            {/* Input */}
+            {/* ── Input prompt ── */}
             <form
               onSubmit={handleSubmit}
-              className="flex items-center gap-2 px-4 py-3 border-t border-slate-700/50"
+              className="flex items-center bg-[#300a24] border-t border-[#1a1a1a] px-3 py-2 font-mono text-[13px]"
             >
+              <span className="text-[#4e9a06] font-bold shrink-0">
+                visitor@portfolio
+              </span>
+              <span className="text-[#aaa] shrink-0">:</span>
+              <span className="text-[#729fcf] font-bold shrink-0">~</span>
+              <span className="text-[#aaa] shrink-0 mr-1">$ </span>
               <input
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about Armando..."
-                className="flex-1 bg-slate-800/60 border border-slate-700/30 rounded-full px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-400/50 transition-colors"
+                placeholder=""
+                className="flex-1 bg-transparent text-[#eeeeec] placeholder:text-[#555] focus:outline-none caret-[#eeeeec] min-w-0"
                 disabled={isLoading}
+                autoComplete="off"
+                spellCheck={false}
               />
-              <button
-                type="submit"
-                disabled={isLoading || !input.trim()}
-                className="w-9 h-9 rounded-full bg-indigo-500 hover:bg-indigo-400 disabled:bg-slate-700 disabled:text-slate-500 text-white flex items-center justify-center transition-colors"
-              >
-                <FontAwesomeIcon icon={faPaperPlane} className="w-3.5 h-3.5" />
-              </button>
+              {/* Blinking cursor when input is empty and focused */}
+              {!input && !isLoading && (
+                <span className="w-[7px] h-[14px] bg-[#eeeeec] animate-[blink_1s_steps(1)_infinite] shrink-0" />
+              )}
             </form>
           </motion.div>
         )}

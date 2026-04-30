@@ -28,6 +28,12 @@
   color: #134e4a;
 }
 
+/* Terminal blinking cursor */
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
 /* Hide default cursor on desktop when shooting star is active */
 @media (min-width: 1024px) {
   *, *::before, *::after {
