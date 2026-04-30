@@ -431,18 +431,108 @@ function InteractiveSaturn({
   );
 }
 
-/* ── Camera controller(lerp-based) ── */
+/* ── Easing function ── */
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+/* ── Warp speed lines ── */
+const WARP_COUNT = 180;
+
+function WarpTunnel({
+  warpRef,
+}: {
+  warpRef: React.MutableRefObject<{ active: boolean; progress: number }>;
+}) {
+  const groupRef = useRef<THREE.Group>(null!);
+  const matRef = useRef<THREE.LineBasicMaterial>(null!);
+  const { camera } = useThree();
+
+  const { geo, baseZ } = useMemo(() => {
+    const positions = new Float32Array(WARP_COUNT * 6);
+    const zArr = new Float32Array(WARP_COUNT);
+    for (let i = 0; i < WARP_COUNT; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const r = 1.2 + Math.random() * 7;
+      const x = Math.cos(angle) * r;
+      const y = Math.sin(angle) * r;
+      const z = (Math.random() - 0.5) * 40;
+      zArr[i] = z;
+      positions[i * 6] = x;
+      positions[i * 6 + 1] = y;
+      positions[i * 6 + 2] = z;
+      positions[i * 6 + 3] = x;
+      positions[i * 6 + 4] = y;
+      positions[i * 6 + 5] = z + 0.05;
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    return { geo: g, baseZ: zArr };
+  }, []);
+
+  useFrame(() => {
+    if (!groupRef.current || !matRef.current) return;
+    const { active, progress } = warpRef.current;
+
+    if (!active) {
+      matRef.current.opacity = 0;
+      return;
+    }
+
+    const fade =
+      progress < 0.15
+        ? progress / 0.15
+        : progress > 0.8
+          ? (1 - progress) / 0.2
+          : 1;
+    matRef.current.opacity = fade * 0.6;
+
+    const stretch = Math.sin(progress * Math.PI) * 8;
+    const posArr = geo.attributes.position.array as Float32Array;
+    for (let i = 0; i < WARP_COUNT; i++) {
+      posArr[i * 6 + 5] = baseZ[i] + 0.05 + stretch;
+    }
+    geo.attributes.position.needsUpdate = true;
+
+    groupRef.current.position.copy(camera.position);
+    groupRef.current.quaternion.copy(camera.quaternion);
+  });
+
+  return (
+    <group ref={groupRef}>
+      <lineSegments geometry={geo}>
+        <lineBasicMaterial
+          ref={matRef}
+          color="#7cb3ff"
+          transparent
+          opacity={0}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
+      </lineSegments>
+    </group>
+  );
+}
+
+/* ── Camera controller (warp-enabled) ── */
 const OVERVIEW_POS = new THREE.Vector3(0, 10, 15);
 const OVERVIEW_TARGET = new THREE.Vector3(0, 0, 0);
+const BASE_FOV = 70;
+const WARP_FOV = 100;
+const WARP_DURATION_MS = 900;
 
 function CameraController({
   activePlanet,
   positionsRef,
   controlsRef,
+  warpRef,
+  onWarpPeak,
 }: {
   activePlanet: string | null;
   positionsRef: React.MutableRefObject<Map<string, THREE.Vector3>>;
   controlsRef: React.MutableRefObject<any>;
+  warpRef: React.MutableRefObject<{ active: boolean; progress: number }>;
+  onWarpPeak: () => void;
 }) {
   const { camera } = useThree();
   const targetPos = useRef(OVERVIEW_POS.clone());
@@ -451,15 +541,102 @@ function CameraController({
   const lerpSpeed = 0.03;
   const isSettled = useRef(true);
 
+  const prevPlanet = useRef<string | null>(null);
+  const isInWarp = useRef(false);
+  const warpStart = useRef(0);
+  const warpPeakFired = useRef(false);
+  const warpStartPos = useRef(new THREE.Vector3());
+  const warpStartLookAt = useRef(new THREE.Vector3());
+  const warpTargetPos = useRef(new THREE.Vector3());
+  const warpTargetLookAt = useRef(new THREE.Vector3());
+
+  const computePlanetCamera = useCallback(
+    (planetId: string) => {
+      const planetPos = positionsRef.current.get(planetId);
+      if (!planetPos) return null;
+      const dir = new THREE.Vector3(planetPos.x, 0, planetPos.z).normalize();
+      if (dir.lengthSq() < 0.001) dir.set(0, 0, 1);
+      const perp = new THREE.Vector3(-dir.z, 0, dir.x);
+      return {
+        camPos: new THREE.Vector3(
+          planetPos.x + perp.x * 4,
+          2.5,
+          planetPos.z + perp.z * 4
+        ),
+        lookAt: planetPos.clone(),
+      };
+    },
+    [positionsRef]
+  );
+
   useEffect(() => {
-    if (activePlanet) {
+    if (activePlanet && activePlanet !== prevPlanet.current) {
+      warpStartPos.current.copy(camera.position);
+      warpStartLookAt.current.copy(currentLookAt.current);
+      isInWarp.current = true;
+      warpStart.current = performance.now();
+      warpPeakFired.current = false;
+      warpRef.current.active = true;
+      warpRef.current.progress = 0;
       isSettled.current = false;
       if (controlsRef.current) controlsRef.current.enabled = false;
+    } else if (!activePlanet) {
+      isInWarp.current = false;
+      warpRef.current.active = false;
+      warpRef.current.progress = 0;
     }
-  }, [activePlanet, controlsRef]);
+    prevPlanet.current = activePlanet;
+  }, [activePlanet, controlsRef, warpRef, camera]);
 
   useFrame(() => {
-    if (activePlanet) {
+    if (isInWarp.current && activePlanet) {
+      const elapsed = performance.now() - warpStart.current;
+      const t = Math.min(elapsed / WARP_DURATION_MS, 1);
+      warpRef.current.progress = t;
+
+      // Recompute target each frame (planet is orbiting)
+      const target = computePlanetCamera(activePlanet);
+      if (target) {
+        warpTargetPos.current.copy(target.camPos);
+        warpTargetLookAt.current.copy(target.lookAt);
+      }
+
+      // FOV: rises to peak at t=0.4, returns by t=1
+      const fovT = t < 0.4 ? t / 0.4 : 1 - (t - 0.4) / 0.6;
+      const fov = BASE_FOV + (WARP_FOV - BASE_FOV) * Math.sin(fovT * Math.PI * 0.5);
+      (camera as THREE.PerspectiveCamera).fov = fov;
+      (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
+
+      // Flash at peak
+      if (t >= 0.35 && !warpPeakFired.current) {
+        warpPeakFired.current = true;
+        onWarpPeak();
+      }
+
+      // Camera position: easeInOutCubic interpolation
+      const eased = easeInOutCubic(t);
+      camera.position.lerpVectors(
+        warpStartPos.current,
+        warpTargetPos.current,
+        eased
+      );
+      currentLookAt.current.lerpVectors(
+        warpStartLookAt.current,
+        warpTargetLookAt.current,
+        eased
+      );
+      camera.lookAt(currentLookAt.current);
+
+      if (t >= 1) {
+        isInWarp.current = false;
+        warpRef.current.active = false;
+        warpRef.current.progress = 0;
+        (camera as THREE.PerspectiveCamera).fov = BASE_FOV;
+        (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
+        targetPos.current.copy(warpTargetPos.current);
+        targetLookAt.current.copy(warpTargetLookAt.current);
+      }
+    } else if (activePlanet) {
       const planetPos = positionsRef.current.get(activePlanet);
       if (planetPos) {
         const dir = new THREE.Vector3(planetPos.x, 0, planetPos.z).normalize();
@@ -623,6 +800,8 @@ export default function GalaxyExplorer() {
   const positionsRef = useRef<Map<string, THREE.Vector3>>(new Map());
   const containerRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
+  const [showFlash, setShowFlash] = useState(false);
+  const warpRef = useRef({ active: false, progress: 0 });
 
   // Initialize position vectors (avoid GC)
   useEffect(() => {
@@ -673,6 +852,11 @@ export default function GalaxyExplorer() {
     setActivePlanet(null);
   }, []);
 
+  const handleWarpPeak = useCallback(() => {
+    setShowFlash(true);
+    setTimeout(() => setShowFlash(false), 250);
+  }, []);
+
   return (
     <section ref={containerRef} id="explore" className="relative h-screen w-full">
       <Canvas
@@ -695,10 +879,13 @@ export default function GalaxyExplorer() {
             onPlanetClick={handlePlanetClick}
             positionsRef={positionsRef}
           />
+          <WarpTunnel warpRef={warpRef} />
           <CameraController
             activePlanet={activePlanet}
             positionsRef={positionsRef}
             controlsRef={controlsRef}
+            warpRef={warpRef}
+            onWarpPeak={handleWarpPeak}
           />
           <OrbitControls
             ref={controlsRef}
@@ -714,6 +901,20 @@ export default function GalaxyExplorer() {
           />
         </Suspense>
       </Canvas>
+
+      {/* Warp flash overlay */}
+      <AnimatePresence>
+        {showFlash && (
+          <motion.div
+            key="warp-flash"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.6 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12, ease: "easeOut" }}
+            className="absolute inset-0 z-20 bg-blue-400/30 pointer-events-none"
+          />
+        )}
+      </AnimatePresence>
 
       {/* Instruction hint */}
       <AnimatePresence>

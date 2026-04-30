@@ -297,10 +297,10 @@ export default function SolarSystem() {
   }, []);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 z-0">
+    <div ref={containerRef} className="absolute inset-0 z-0 pointer-events-none">
       <Canvas
         camera={{ position: [0, 12, 20], fov: 60 }}
-        style={{ background: "#020617" }}
+        style={{ background: "#020617", pointerEvents: "none" }}
         dpr={[1, 1.5]}
         gl={{ antialias: false, powerPreference: "high-performance", alpha: false, stencil: false, depth: true }}
         frameloop={visible ? "always" : "never"}

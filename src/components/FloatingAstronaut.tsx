@@ -246,7 +246,7 @@ export default function FloatingAstronaut() {
       <Canvas
         camera={{ position: [0, 0, 5], fov: 50 }}
         gl={{ alpha: true, antialias: true, powerPreference: "low-power" }}
-        style={{ background: "transparent" }}
+        style={{ background: "transparent", pointerEvents: "none" }}
         dpr={[1, 1.5]}
       >
         <Scene mouse={mouse} />

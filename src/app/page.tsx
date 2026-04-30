@@ -17,9 +17,14 @@ const FloatingAstronaut = dynamic(
   { ssr: false }
 );
 
+const IntroOverlay = dynamic(() => import("@/components/IntroOverlay"), {
+  ssr: false,
+});
+
 export default function Home() {
   return (
     <>
+      <IntroOverlay />
       <CosmicBackground />
       <SpotlightCursor />
       <ShootingStarCursor />
