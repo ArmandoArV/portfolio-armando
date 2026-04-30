@@ -2,11 +2,13 @@
 
 import { useRef, useMemo, useState, useEffect, useCallback, Suspense } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useTexture, Html } from "@react-three/drei";
+import { useTexture, Html, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { AnimatePresence, motion } from "framer-motion";
 import { PLANET_DEFS, type PlanetDef } from "@/data/planets";
 import ContentDrawer from "./ContentDrawer";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRocket } from "@fortawesome/free-solid-svg-icons";
 
 /* ── Shared geometries ── */
 const SPHERE_GEO = new THREE.SphereGeometry(1, 24, 24);
@@ -358,27 +360,36 @@ function InteractiveSaturn({
 }
 
 /* ── Camera controller (lerp-based) ── */
-const OVERVIEW_POS = new THREE.Vector3(0, 18, 28);
+const OVERVIEW_POS = new THREE.Vector3(0, 10, 15);
 const OVERVIEW_TARGET = new THREE.Vector3(0, 0, 0);
 
 function CameraController({
   activePlanet,
   positionsRef,
+  controlsRef,
 }: {
   activePlanet: string | null;
   positionsRef: React.MutableRefObject<Map<string, THREE.Vector3>>;
+  controlsRef: React.MutableRefObject<any>;
 }) {
   const { camera } = useThree();
   const targetPos = useRef(OVERVIEW_POS.clone());
   const targetLookAt = useRef(OVERVIEW_TARGET.clone());
   const currentLookAt = useRef(OVERVIEW_TARGET.clone());
   const lerpSpeed = 0.03;
+  const isSettled = useRef(true);
+
+  useEffect(() => {
+    if (activePlanet) {
+      isSettled.current = false;
+      if (controlsRef.current) controlsRef.current.enabled = false;
+    }
+  }, [activePlanet, controlsRef]);
 
   useFrame(() => {
     if (activePlanet) {
       const planetPos = positionsRef.current.get(activePlanet);
       if (planetPos) {
-        // Camera to the side of the planet (perpendicular to sun-planet line)
         const dir = new THREE.Vector3(planetPos.x, 0, planetPos.z).normalize();
         if (dir.lengthSq() < 0.001) dir.set(0, 0, 1);
         const perp = new THREE.Vector3(-dir.z, 0, dir.x);
@@ -389,14 +400,25 @@ function CameraController({
         );
         targetLookAt.current.copy(planetPos);
       }
-    } else {
+      camera.position.lerp(targetPos.current, lerpSpeed);
+      currentLookAt.current.lerp(targetLookAt.current, lerpSpeed);
+      camera.lookAt(currentLookAt.current);
+    } else if (!isSettled.current) {
       targetPos.current.copy(OVERVIEW_POS);
       targetLookAt.current.copy(OVERVIEW_TARGET);
-    }
+      camera.position.lerp(targetPos.current, lerpSpeed);
+      currentLookAt.current.lerp(targetLookAt.current, lerpSpeed);
+      camera.lookAt(currentLookAt.current);
 
-    camera.position.lerp(targetPos.current, lerpSpeed);
-    currentLookAt.current.lerp(targetLookAt.current, lerpSpeed);
-    camera.lookAt(currentLookAt.current);
+      if (camera.position.distanceTo(OVERVIEW_POS) < 0.2) {
+        isSettled.current = true;
+        if (controlsRef.current) {
+          controlsRef.current.target.copy(OVERVIEW_TARGET);
+          controlsRef.current.enabled = true;
+          controlsRef.current.update();
+        }
+      }
+    }
   });
 
   return null;
@@ -567,6 +589,8 @@ export default function GalaxyExplorer() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  const controlsRef = useRef<any>(null);
+
   const handlePlanetClick = useCallback((id: string) => {
     setActivePlanet((prev) => (prev === id ? null : id));
   }, []);
@@ -578,7 +602,7 @@ export default function GalaxyExplorer() {
   return (
     <section ref={containerRef} id="explore" className="relative h-screen w-full">
       <Canvas
-        camera={{ position: [0, 18, 28], fov: 60 }}
+        camera={{ position: [0, 10, 15], fov: 70 }}
         style={{ background: "#020617" }}
         dpr={[1, 1.5]}
         gl={{
@@ -600,6 +624,19 @@ export default function GalaxyExplorer() {
           <CameraController
             activePlanet={activePlanet}
             positionsRef={positionsRef}
+            controlsRef={controlsRef}
+          />
+          <OrbitControls
+            ref={controlsRef}
+            enablePan={false}
+            enableZoom={false}
+            enableRotate={true}
+            minPolarAngle={Math.PI * 0.15}
+            maxPolarAngle={Math.PI * 0.45}
+            autoRotate={!activePlanet}
+            autoRotateSpeed={0.3}
+            mouseButtons={{ LEFT: undefined as any, MIDDLE: undefined as any, RIGHT: THREE.MOUSE.ROTATE }}
+            touches={{ ONE: THREE.TOUCH.ROTATE, TWO: undefined as any }}
           />
         </Suspense>
       </Canvas>
@@ -615,7 +652,7 @@ export default function GalaxyExplorer() {
             className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-center"
           >
             <p className="text-slate-400 text-sm bg-slate-900/60 backdrop-blur-sm px-6 py-3 rounded-full border border-slate-700/30">
-              Click on a planet to explore ✨
+              Click on a planet to explore <FontAwesomeIcon icon={faRocket} className="w-4 h-4 inline" />
             </p>
           </motion.div>
         )}
