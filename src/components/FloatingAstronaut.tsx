@@ -206,7 +206,7 @@ function Tether({ astronautPos, issPos }: { astronautPos: React.RefObject<THREE.
   );
 }
 
-/* ─────────────────── Draggable Astronaut ─────────────────── */
+/* ─────────────────── Draggable Astronaut (LEGO Style) ─────────────────── */
 
 function Astronaut({
   mouse,
@@ -219,6 +219,8 @@ function Astronaut({
 }) {
   const groupRef = useRef<THREE.Group>(null!);
   const headRef = useRef<THREE.Group>(null!);
+  const leftArmRef = useRef<THREE.Group>(null!);
+  const rightArmRef = useRef<THREE.Group>(null!);
   const velocity = useRef(new THREE.Vector3());
   const wiggle = useRef(0);
 
@@ -227,7 +229,6 @@ function Astronaut({
     const t = clock.getElapsedTime();
 
     if (!isDragging.current) {
-      // Spring physics: pull back toward rest position
       const dx = REST_POS.x - posRef.current.x;
       const dy = REST_POS.y - posRef.current.y;
       velocity.current.x += dx * SPRING_K * 0.016;
@@ -235,204 +236,165 @@ function Astronaut({
       velocity.current.multiplyScalar(DAMPING);
       posRef.current.x += velocity.current.x * 0.016 * 60;
       posRef.current.y += velocity.current.y * 0.016 * 60;
-
-      // Decay wiggle
       wiggle.current *= 0.95;
     } else {
-      // While dragging, add wiggle intensity
       wiggle.current = Math.min(wiggle.current + 0.1, 2);
       velocity.current.set(0, 0, 0);
     }
 
-    // Apply position with idle bob
+    // Position with idle bob
     groupRef.current.position.x = posRef.current.x;
-    groupRef.current.position.y = posRef.current.y + Math.sin(t * 0.8) * 0.05;
+    groupRef.current.position.y = posRef.current.y + Math.sin(t * 0.8) * 0.04;
     groupRef.current.position.z = posRef.current.z;
 
-    // Funny wiggle/tumble when being dragged or springing back
+    // Wiggle/tumble
     const w = wiggle.current;
-    groupRef.current.rotation.z = -0.2 + Math.sin(t * 8) * w * 0.15 + velocity.current.x * 0.3;
-    groupRef.current.rotation.x = -0.3 + Math.sin(t * 6) * w * 0.1 + velocity.current.y * -0.2;
-    groupRef.current.rotation.y = 0.2 + Math.sin(t * 0.3) * 0.1;
+    groupRef.current.rotation.z = Math.sin(t * 8) * w * 0.12 + velocity.current.x * 0.25;
+    groupRef.current.rotation.x = Math.sin(t * 6) * w * 0.08 + velocity.current.y * -0.15;
+    groupRef.current.rotation.y = Math.sin(t * 0.3) * 0.08;
 
-    // Head tracks mouse subtly
+    // Head tracks mouse
     if (headRef.current && mouse.current) {
-      const mx = mouse.current.x;
-      const my = mouse.current.y;
-      headRef.current.rotation.y = THREE.MathUtils.lerp(
-        headRef.current.rotation.y,
-        mx * 0.4,
-        0.05
-      );
-      headRef.current.rotation.x = THREE.MathUtils.lerp(
-        headRef.current.rotation.x,
-        -my * 0.25,
-        0.05
-      );
+      headRef.current.rotation.y = THREE.MathUtils.lerp(headRef.current.rotation.y, mouse.current.x * 0.35, 0.05);
+      headRef.current.rotation.x = THREE.MathUtils.lerp(headRef.current.rotation.x, -mouse.current.y * 0.2, 0.05);
+    }
+
+    // Arms float gently
+    if (leftArmRef.current) {
+      leftArmRef.current.rotation.x = Math.sin(t * 0.5) * 0.15 - 0.2;
+      leftArmRef.current.rotation.z = -0.3 + Math.sin(t * 0.4) * 0.05;
+    }
+    if (rightArmRef.current) {
+      rightArmRef.current.rotation.x = Math.sin(t * 0.45 + 1) * 0.15 + 0.1;
+      rightArmRef.current.rotation.z = 0.3 + Math.sin(t * 0.35) * 0.05;
     }
   });
 
   return (
-    <group ref={groupRef} scale={0.5}>
-      {/* ── Body (torso) ── */}
+    <group ref={groupRef} scale={0.45}>
+      {/* ── LEGO Torso (rectangular block) ── */}
       <mesh>
-        <capsuleGeometry args={[0.28, 0.5, 4, 12]} />
-        <meshStandardMaterial color={SUIT_COLOR} roughness={0.7} metalness={0.1} />
+        <boxGeometry args={[0.6, 0.55, 0.3]} />
+        <meshStandardMaterial color={SUIT_COLOR} roughness={0.5} metalness={0.1} />
       </mesh>
-
-      {/* Chest stripe */}
-      <mesh position={[0, 0.05, 0.27]}>
-        <boxGeometry args={[0.35, 0.08, 0.02]} />
+      {/* Chest print / detail */}
+      <mesh position={[0, 0.05, 0.151]}>
+        <boxGeometry args={[0.4, 0.12, 0.01]} />
         <meshStandardMaterial color={ACCENT_COLOR} />
       </mesh>
+      {/* Name tag */}
+      <mesh position={[0.12, -0.1, 0.151]}>
+        <boxGeometry args={[0.18, 0.08, 0.01]} />
+        <meshStandardMaterial color={0x333333} />
+      </mesh>
 
-      {/* ── Head / Helmet (tracks mouse) ── */}
-      <group ref={headRef} position={[0, 0.62, 0]}>
+      {/* ── LEGO Head / Helmet ── */}
+      <group ref={headRef} position={[0, 0.48, 0]}>
+        {/* Helmet (rounded box) */}
         <mesh>
-          <sphereGeometry args={[0.32, 24, 24]} />
-          <meshStandardMaterial color={SUIT_COLOR} roughness={0.5} metalness={0.2} />
+          <boxGeometry args={[0.48, 0.44, 0.42]} />
+          <meshStandardMaterial color={SUIT_COLOR} roughness={0.4} metalness={0.15} />
         </mesh>
-        <mesh position={[0, 0, 0.15]}>
-          <sphereGeometry args={[0.26, 24, 24, 0, Math.PI, 0, Math.PI]} />
+        {/* Helmet rounded top */}
+        <mesh position={[0, 0.18, 0]}>
+          <sphereGeometry args={[0.24, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          <meshStandardMaterial color={SUIT_COLOR} roughness={0.4} metalness={0.15} />
+        </mesh>
+        {/* Visor (gold/blue tinted) */}
+        <mesh position={[0, 0, 0.18]}>
+          <boxGeometry args={[0.34, 0.28, 0.08]} />
           <meshStandardMaterial
             color={VISOR_COLOR}
             metalness={0.95}
             roughness={0.05}
             transparent
-            opacity={0.85}
-            envMapIntensity={2}
+            opacity={0.8}
           />
         </mesh>
-        <mesh position={[0, 0, 0.12]}>
-          <torusGeometry args={[0.26, 0.025, 12, 24]} />
-          <meshStandardMaterial color={JOINT_COLOR} metalness={0.9} roughness={0.2} />
+        {/* Visor frame */}
+        <mesh position={[0, 0, 0.16]}>
+          <boxGeometry args={[0.38, 0.32, 0.02]} />
+          <meshStandardMaterial color={JOINT_COLOR} metalness={0.8} roughness={0.2} />
         </mesh>
       </group>
 
-      {/* ── Backpack ── */}
-      <group position={[0, 0.1, -0.35]}>
+      {/* ── LEGO Arms (cylinders with C-hands) ── */}
+      <group ref={leftArmRef} position={[-0.38, 0.15, 0]}>
+        {/* Upper arm */}
+        <mesh position={[0, -0.18, 0]} rotation={[0, 0, 0]}>
+          <boxGeometry args={[0.14, 0.35, 0.14]} />
+          <meshStandardMaterial color={SUIT_COLOR} roughness={0.5} metalness={0.1} />
+        </mesh>
+        {/* C-shaped hand (torus) */}
+        <mesh position={[0, -0.4, 0.04]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[0.06, 0.03, 8, 12, Math.PI * 1.5]} />
+          <meshStandardMaterial color={0xffcc00} roughness={0.4} metalness={0.2} />
+        </mesh>
+      </group>
+      <group ref={rightArmRef} position={[0.38, 0.15, 0]}>
+        {/* Upper arm */}
+        <mesh position={[0, -0.18, 0]}>
+          <boxGeometry args={[0.14, 0.35, 0.14]} />
+          <meshStandardMaterial color={SUIT_COLOR} roughness={0.5} metalness={0.1} />
+        </mesh>
+        {/* C-shaped hand */}
+        <mesh position={[0, -0.4, 0.04]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[0.06, 0.03, 8, 12, Math.PI * 1.5]} />
+          <meshStandardMaterial color={0xffcc00} roughness={0.4} metalness={0.2} />
+        </mesh>
+      </group>
+
+      {/* ── LEGO Legs (hip block + two leg blocks) ── */}
+      <group position={[0, -0.45, 0]}>
+        {/* Hip connector */}
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[0.5, 0.12, 0.25]} />
+          <meshStandardMaterial color={SUIT_COLOR} roughness={0.5} metalness={0.1} />
+        </mesh>
+        {/* Left leg */}
+        <mesh position={[-0.13, -0.24, 0]}>
+          <boxGeometry args={[0.22, 0.35, 0.22]} />
+          <meshStandardMaterial color={SUIT_COLOR} roughness={0.5} metalness={0.1} />
+        </mesh>
+        {/* Right leg */}
+        <mesh position={[0.13, -0.24, 0]}>
+          <boxGeometry args={[0.22, 0.35, 0.22]} />
+          <meshStandardMaterial color={SUIT_COLOR} roughness={0.5} metalness={0.1} />
+        </mesh>
+        {/* Feet (slightly extended forward) */}
+        <mesh position={[-0.13, -0.42, 0.04]}>
+          <boxGeometry args={[0.22, 0.04, 0.28]} />
+          <meshStandardMaterial color={JOINT_COLOR} roughness={0.4} metalness={0.3} />
+        </mesh>
+        <mesh position={[0.13, -0.42, 0.04]}>
+          <boxGeometry args={[0.22, 0.04, 0.28]} />
+          <meshStandardMaterial color={JOINT_COLOR} roughness={0.4} metalness={0.3} />
+        </mesh>
+      </group>
+
+      {/* ── Backpack (LEGO oxygen tank) ── */}
+      <group position={[0, 0.05, -0.22]}>
         <mesh>
-          <boxGeometry args={[0.35, 0.45, 0.18]} />
-          <meshStandardMaterial color={JOINT_COLOR} roughness={0.4} metalness={0.5} />
+          <boxGeometry args={[0.35, 0.4, 0.12]} />
+          <meshStandardMaterial color={JOINT_COLOR} roughness={0.4} metalness={0.4} />
         </mesh>
-        <mesh position={[-0.1, 0, -0.06]}>
-          <cylinderGeometry args={[0.04, 0.04, 0.35, 8]} />
+        {/* Tank cylinder */}
+        <mesh position={[0, 0, -0.08]} rotation={[0, 0, 0]}>
+          <cylinderGeometry args={[0.06, 0.06, 0.35, 8]} />
           <meshStandardMaterial color={0x888888} metalness={0.7} roughness={0.3} />
         </mesh>
-        <mesh position={[0.1, 0, -0.06]}>
-          <cylinderGeometry args={[0.04, 0.04, 0.35, 8]} />
-          <meshStandardMaterial color={0x888888} metalness={0.7} roughness={0.3} />
-        </mesh>
-        {/* Tether connection point */}
-        <mesh position={[0, 0.25, -0.05]}>
+        {/* Tether connection */}
+        <mesh position={[0, 0.22, -0.04]}>
           <sphereGeometry args={[0.04, 8, 8]} />
           <meshStandardMaterial color={TETHER_COLOR} metalness={0.8} roughness={0.2} />
         </mesh>
       </group>
 
-      {/* ── Arms ── */}
-      <AstronautArm side={-1} />
-      <AstronautArm side={1} />
-
-      {/* ── Legs ── */}
-      <AstronautLeg side={-1} />
-      <AstronautLeg side={1} />
-    </group>
-  );
-}
-
-/* ─────────────────── Arm / Leg Components ─────────────────── */
-
-function AstronautArm({ side }: { side: number }) {
-  const ref = useRef<THREE.Group>(null!);
-  const forearmRef = useRef<THREE.Group>(null!);
-
-  useFrame(({ clock }) => {
-    if (!ref.current) return;
-    const t = clock.getElapsedTime();
-
-    if (side === -1) {
-      ref.current.rotation.x = -0.8 + Math.sin(t * 0.4) * 0.08;
-      ref.current.rotation.z = -0.6 + Math.sin(t * 0.5) * 0.05;
-      if (forearmRef.current) {
-        forearmRef.current.rotation.x = -0.5 + Math.sin(t * 0.6) * 0.06;
-      }
-    } else {
-      ref.current.rotation.x = 0.3 + Math.sin(t * 0.35 + 1) * 0.06;
-      ref.current.rotation.z = 0.5 + Math.sin(t * 0.45) * 0.04;
-      if (forearmRef.current) {
-        forearmRef.current.rotation.x = 0.6 + Math.sin(t * 0.5 + 0.5) * 0.05;
-      }
-    }
-  });
-
-  return (
-    <group ref={ref} position={[side * 0.38, 0.15, 0]}>
-      <mesh position={[0, -0.15, 0]}>
-        <capsuleGeometry args={[0.08, 0.2, 4, 8]} />
-        <meshStandardMaterial color={SUIT_COLOR} roughness={0.7} metalness={0.1} />
+      {/* ── LEGO stud on top of helmet ── */}
+      <mesh position={[0, 0.88, 0]}>
+        <cylinderGeometry args={[0.08, 0.08, 0.06, 12]} />
+        <meshStandardMaterial color={SUIT_COLOR} roughness={0.4} metalness={0.15} />
       </mesh>
-      <mesh position={[0, -0.3, 0]}>
-        <sphereGeometry args={[0.09, 12, 12]} />
-        <meshStandardMaterial color={JOINT_COLOR} metalness={0.8} roughness={0.2} />
-      </mesh>
-      <group ref={forearmRef} position={[0, -0.3, 0]}>
-        <mesh position={[0, -0.15, 0]}>
-          <capsuleGeometry args={[0.07, 0.18, 4, 8]} />
-          <meshStandardMaterial color={SUIT_COLOR} roughness={0.7} metalness={0.1} />
-        </mesh>
-        <mesh position={[0, -0.3, 0]}>
-          <sphereGeometry args={[0.09, 12, 12]} />
-          <meshStandardMaterial color={JOINT_COLOR} roughness={0.5} metalness={0.3} />
-        </mesh>
-      </group>
-    </group>
-  );
-}
-
-function AstronautLeg({ side }: { side: number }) {
-  const ref = useRef<THREE.Group>(null!);
-  const shinRef = useRef<THREE.Group>(null!);
-
-  useFrame(({ clock }) => {
-    if (!ref.current) return;
-    const t = clock.getElapsedTime();
-
-    if (side === -1) {
-      ref.current.rotation.x = 0.4 + Math.sin(t * 0.3) * 0.05;
-      ref.current.rotation.z = -0.1;
-      if (shinRef.current) {
-        shinRef.current.rotation.x = -0.3 + Math.sin(t * 0.4 + 0.5) * 0.04;
-      }
-    } else {
-      ref.current.rotation.x = 0.6 + Math.sin(t * 0.35 + 1) * 0.05;
-      ref.current.rotation.z = 0.15;
-      if (shinRef.current) {
-        shinRef.current.rotation.x = -0.8 + Math.sin(t * 0.45 + 1) * 0.04;
-      }
-    }
-  });
-
-  return (
-    <group ref={ref} position={[side * 0.16, -0.55, 0]}>
-      <mesh position={[0, -0.1, 0]}>
-        <capsuleGeometry args={[0.1, 0.2, 4, 8]} />
-        <meshStandardMaterial color={SUIT_COLOR} roughness={0.7} metalness={0.1} />
-      </mesh>
-      <mesh position={[0, -0.25, 0]}>
-        <sphereGeometry args={[0.1, 12, 12]} />
-        <meshStandardMaterial color={JOINT_COLOR} metalness={0.8} roughness={0.2} />
-      </mesh>
-      <group ref={shinRef} position={[0, -0.25, 0]}>
-        <mesh position={[0, -0.15, 0]}>
-          <capsuleGeometry args={[0.09, 0.18, 4, 8]} />
-          <meshStandardMaterial color={SUIT_COLOR} roughness={0.7} metalness={0.1} />
-        </mesh>
-        <mesh position={[0, -0.3, 0.04]}>
-          <boxGeometry args={[0.16, 0.12, 0.22]} />
-          <meshStandardMaterial color={JOINT_COLOR} roughness={0.4} metalness={0.5} />
-        </mesh>
-      </group>
     </group>
   );
 }
