@@ -9,7 +9,6 @@ import { faArrowRight, faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import MagneticButton from "./MagneticButton";
 
 const SolarSystem = dynamic(() => import("./SolarSystem"), { ssr: false });
-const Rocky = dynamic(() => import("./Rocky"), { ssr: false });
 
 export default function Hero() {
   return (
@@ -23,14 +22,14 @@ export default function Hero() {
         {/* Dark radial backdrop for readability */}
         <div className="absolute inset-0 -m-20 bg-radial-[ellipse_at_center] from-slate-950/90 via-slate-950/50 to-transparent pointer-events-none rounded-full blur-2xl" />
 
-        {/* Profile picture + Rocky */}
+        {/* Profile picture */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          className="relative mb-6 mx-auto flex items-center justify-center gap-3"
+          className="relative mb-6 mx-auto"
         >
-          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden ring-4 ring-blue-400/20 shadow-lg shadow-blue-500/15">
+          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full mx-auto overflow-hidden ring-4 ring-blue-400/20 shadow-lg shadow-blue-500/15">
             <img
               src="/images/Armando-5.jpg"
               alt="Armando Arredondo Valle"
@@ -38,15 +37,6 @@ export default function Hero() {
             />
           </div>
           <div className="absolute inset-0 w-32 h-32 md:w-40 md:h-40 mx-auto rounded-full bg-gradient-to-tr from-blue-500/10 to-transparent pointer-events-none" />
-          {/* Rocky saluting */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 1.2 }}
-            className="absolute -right-8 -top-2 md:-right-10 md:-top-3"
-          >
-            <Rocky />
-          </motion.div>
         </motion.div>
 
         <motion.p
