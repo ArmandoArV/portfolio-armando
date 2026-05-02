@@ -890,14 +890,16 @@ export default function GalaxyExplorer() {
           <OrbitControls
             ref={controlsRef}
             enablePan={false}
-            enableZoom={false}
+            enableZoom={true}
             enableRotate={true}
+            minDistance={5}
+            maxDistance={28}
             minPolarAngle={Math.PI * 0.15}
             maxPolarAngle={Math.PI * 0.45}
             autoRotate={!activePlanet}
             autoRotateSpeed={0.3}
             mouseButtons={{ LEFT: undefined as any, MIDDLE: undefined as any, RIGHT: THREE.MOUSE.ROTATE }}
-            touches={{ ONE: THREE.TOUCH.ROTATE, TWO: undefined as any }}
+            touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE }}
           />
         </Suspense>
       </Canvas>
