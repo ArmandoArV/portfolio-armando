@@ -7,8 +7,6 @@ import * as THREE from "three";
 import { AnimatePresence, motion } from "framer-motion";
 import { PLANET_DEFS, type PlanetDef } from "@/data/planets";
 import ContentDrawer from "./ContentDrawer";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRocket } from "@fortawesome/free-solid-svg-icons";
 
 /* ── Shared geometries ── */
 const SPHERE_GEO = new THREE.SphereGeometry(1, 24, 24);
@@ -918,19 +916,36 @@ export default function GalaxyExplorer() {
         )}
       </AnimatePresence>
 
-      {/* Instruction hint */}
+      {/* Console-style intro hint */}
       <AnimatePresence>
         {!activePlanet && visible && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ delay: 0.5 }}
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-center"
+            key="explore-hint"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.4 } }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+            className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"
           >
-            <p className="text-slate-400 text-sm bg-slate-900/60 backdrop-blur-sm px-6 py-3 rounded-full border border-slate-700/30">
-              Click on a planet to explore <FontAwesomeIcon icon={faRocket} className="w-4 h-4 inline" />
-            </p>
+            <motion.div
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 0 }}
+              transition={{ delay: 4, duration: 1.5 }}
+              className="text-center"
+            >
+              <p className="font-mono text-lg md:text-2xl text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.6)]">
+                <span className="text-green-500/70">&gt; </span>
+                Click on a planet to explore
+                <motion.span
+                  animate={{ opacity: [1, 0] }}
+                  transition={{ duration: 0.8, repeat: Infinity, repeatType: "reverse" }}
+                  className="inline-block ml-1 w-[2px] h-5 md:h-6 bg-green-400 align-middle"
+                />
+              </p>
+              <p className="font-mono text-xs md:text-sm text-slate-500 mt-2">
+                scroll to zoom • right-click to rotate
+              </p>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
