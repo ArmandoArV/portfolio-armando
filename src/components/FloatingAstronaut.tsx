@@ -13,43 +13,40 @@ const ACCENT_COLOR = 0xc62828;
 
 function Astronaut({ mouse }: { mouse: React.RefObject<{ x: number; y: number }> }) {
   const groupRef = useRef<THREE.Group>(null!);
-  const posRef = useRef(new THREE.Vector3(2, 0, 0));
+  const headRef = useRef<THREE.Group>(null!);
 
   useFrame(({ clock }) => {
     if (!groupRef.current) return;
     const t = clock.getElapsedTime();
 
-    // Lerp toward cursor with drift
-    const mx = mouse.current ? mouse.current.x : 0;
-    const my = mouse.current ? mouse.current.y : 0;
-    const targetX = mx * 3.5;
-    const targetY = my * 2.5;
-    posRef.current.x += (targetX - posRef.current.x) * 0.02;
-    posRef.current.y += (targetY - posRef.current.y) * 0.02;
-
-    // Idle bob
-    groupRef.current.position.x = posRef.current.x;
-    groupRef.current.position.y = posRef.current.y + Math.sin(t * 0.8) * 0.15;
+    // Fixed position — gentle idle bob only
+    groupRef.current.position.x = 0;
+    groupRef.current.position.y = Math.sin(t * 0.8) * 0.1;
     groupRef.current.position.z = 0;
 
-    // Gentle rotation following movement direction
-    const dx = targetX - posRef.current.x;
-    const dy = targetY - posRef.current.y;
-    groupRef.current.rotation.z = THREE.MathUtils.lerp(
-      groupRef.current.rotation.z,
-      -dx * 0.15,
-      0.05
-    );
-    groupRef.current.rotation.x = THREE.MathUtils.lerp(
-      groupRef.current.rotation.x,
-      dy * 0.1,
-      0.05
-    );
-    groupRef.current.rotation.y = Math.sin(t * 0.3) * 0.2;
+    // Relaxed body sway
+    groupRef.current.rotation.y = Math.sin(t * 0.3) * 0.1;
+    groupRef.current.rotation.x = Math.sin(t * 0.2) * 0.03;
+
+    // Head tracks mouse subtly
+    if (headRef.current && mouse.current) {
+      const mx = mouse.current.x;
+      const my = mouse.current.y;
+      headRef.current.rotation.y = THREE.MathUtils.lerp(
+        headRef.current.rotation.y,
+        mx * 0.4,
+        0.05
+      );
+      headRef.current.rotation.x = THREE.MathUtils.lerp(
+        headRef.current.rotation.x,
+        -my * 0.25,
+        0.05
+      );
+    }
   });
 
   return (
-    <group ref={groupRef} scale={0.5}>
+    <group ref={groupRef} scale={0.5} rotation={[0.1, 0.2, -0.15]}>
       {/* ── Body (torso) ── */}
       <mesh>
         <capsuleGeometry args={[0.28, 0.5, 4, 12]} />
@@ -62,8 +59,8 @@ function Astronaut({ mouse }: { mouse: React.RefObject<{ x: number; y: number }>
         <meshStandardMaterial color={ACCENT_COLOR} />
       </mesh>
 
-      {/* ── Head / Helmet ── */}
-      <group position={[0, 0.62, 0]}>
+      {/* ── Head / Helmet (tracks mouse) ── */}
+      <group ref={headRef} position={[0, 0.62, 0]}>
         {/* Helmet shell */}
         <mesh>
           <sphereGeometry args={[0.32, 24, 24]} />
@@ -240,11 +237,11 @@ export default function FloatingAstronaut() {
 
   return (
     <div
-      className="fixed inset-0 z-30 pointer-events-none"
+      className="fixed bottom-4 left-4 z-30 pointer-events-none w-40 h-40 md:w-52 md:h-52"
       aria-hidden="true"
     >
       <Canvas
-        camera={{ position: [0, 0, 5], fov: 50 }}
+        camera={{ position: [0, 0, 4], fov: 50 }}
         gl={{ alpha: true, antialias: true, powerPreference: "low-power" }}
         style={{ background: "transparent", pointerEvents: "none" }}
         dpr={[1, 1.5]}
