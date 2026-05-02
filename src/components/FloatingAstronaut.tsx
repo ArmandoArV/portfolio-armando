@@ -46,7 +46,7 @@ function Astronaut({ mouse }: { mouse: React.RefObject<{ x: number; y: number }>
   });
 
   return (
-    <group ref={groupRef} scale={0.5} rotation={[0.1, 0.2, -0.15]}>
+    <group ref={groupRef} scale={0.5} rotation={[-0.3, 0.2, -0.2]}>
       {/* ── Body (torso) ── */}
       <mesh>
         <capsuleGeometry args={[0.28, 0.5, 4, 12]} />
@@ -117,13 +117,27 @@ function Astronaut({ mouse }: { mouse: React.RefObject<{ x: number; y: number }>
 
 function AstronautArm({ side }: { side: number }) {
   const ref = useRef<THREE.Group>(null!);
+  const forearmRef = useRef<THREE.Group>(null!);
 
   useFrame(({ clock }) => {
     if (!ref.current) return;
     const t = clock.getElapsedTime();
-    // Gentle floating arm sway
-    ref.current.rotation.x = Math.sin(t * 0.6 + side * 1.5) * 0.25;
-    ref.current.rotation.z = side * 0.3 + Math.sin(t * 0.4 + side) * 0.1;
+
+    if (side === -1) {
+      // Left arm: raised up and relaxed (like waving/resting overhead)
+      ref.current.rotation.x = -0.8 + Math.sin(t * 0.4) * 0.08;
+      ref.current.rotation.z = -0.6 + Math.sin(t * 0.5) * 0.05;
+      if (forearmRef.current) {
+        forearmRef.current.rotation.x = -0.5 + Math.sin(t * 0.6) * 0.06;
+      }
+    } else {
+      // Right arm: resting near chest/belly
+      ref.current.rotation.x = 0.3 + Math.sin(t * 0.35 + 1) * 0.06;
+      ref.current.rotation.z = 0.5 + Math.sin(t * 0.45) * 0.04;
+      if (forearmRef.current) {
+        forearmRef.current.rotation.x = 0.6 + Math.sin(t * 0.5 + 0.5) * 0.05;
+      }
+    }
   });
 
   return (
@@ -139,27 +153,44 @@ function AstronautArm({ side }: { side: number }) {
         <meshStandardMaterial color={JOINT_COLOR} metalness={0.8} roughness={0.2} />
       </mesh>
       {/* Forearm */}
-      <mesh position={[0, -0.45, 0]}>
-        <capsuleGeometry args={[0.07, 0.18, 4, 8]} />
-        <meshStandardMaterial color={SUIT_COLOR} roughness={0.7} metalness={0.1} />
-      </mesh>
-      {/* Glove */}
-      <mesh position={[0, -0.6, 0]}>
-        <sphereGeometry args={[0.09, 12, 12]} />
-        <meshStandardMaterial color={JOINT_COLOR} roughness={0.5} metalness={0.3} />
-      </mesh>
+      <group ref={forearmRef} position={[0, -0.3, 0]}>
+        <mesh position={[0, -0.15, 0]}>
+          <capsuleGeometry args={[0.07, 0.18, 4, 8]} />
+          <meshStandardMaterial color={SUIT_COLOR} roughness={0.7} metalness={0.1} />
+        </mesh>
+        {/* Glove */}
+        <mesh position={[0, -0.3, 0]}>
+          <sphereGeometry args={[0.09, 12, 12]} />
+          <meshStandardMaterial color={JOINT_COLOR} roughness={0.5} metalness={0.3} />
+        </mesh>
+      </group>
     </group>
   );
 }
 
 function AstronautLeg({ side }: { side: number }) {
   const ref = useRef<THREE.Group>(null!);
+  const shinRef = useRef<THREE.Group>(null!);
 
   useFrame(({ clock }) => {
     if (!ref.current) return;
     const t = clock.getElapsedTime();
-    // Subtle floating leg drift (opposite phase per side)
-    ref.current.rotation.x = Math.sin(t * 0.5 + side * Math.PI) * 0.15;
+
+    if (side === -1) {
+      // Left leg: extended and relaxed
+      ref.current.rotation.x = 0.4 + Math.sin(t * 0.3) * 0.05;
+      ref.current.rotation.z = -0.1;
+      if (shinRef.current) {
+        shinRef.current.rotation.x = -0.3 + Math.sin(t * 0.4 + 0.5) * 0.04;
+      }
+    } else {
+      // Right leg: bent at knee (crossed/relaxed)
+      ref.current.rotation.x = 0.6 + Math.sin(t * 0.35 + 1) * 0.05;
+      ref.current.rotation.z = 0.15;
+      if (shinRef.current) {
+        shinRef.current.rotation.x = -0.8 + Math.sin(t * 0.45 + 1) * 0.04;
+      }
+    }
   });
 
   return (
@@ -174,16 +205,18 @@ function AstronautLeg({ side }: { side: number }) {
         <sphereGeometry args={[0.1, 12, 12]} />
         <meshStandardMaterial color={JOINT_COLOR} metalness={0.8} roughness={0.2} />
       </mesh>
-      {/* Shin */}
-      <mesh position={[0, -0.4, 0]}>
-        <capsuleGeometry args={[0.09, 0.18, 4, 8]} />
-        <meshStandardMaterial color={SUIT_COLOR} roughness={0.7} metalness={0.1} />
-      </mesh>
-      {/* Boot */}
-      <mesh position={[0, -0.55, 0.04]}>
-        <boxGeometry args={[0.16, 0.12, 0.22]} />
-        <meshStandardMaterial color={JOINT_COLOR} roughness={0.4} metalness={0.5} />
-      </mesh>
+      {/* Shin + Boot */}
+      <group ref={shinRef} position={[0, -0.25, 0]}>
+        <mesh position={[0, -0.15, 0]}>
+          <capsuleGeometry args={[0.09, 0.18, 4, 8]} />
+          <meshStandardMaterial color={SUIT_COLOR} roughness={0.7} metalness={0.1} />
+        </mesh>
+        {/* Boot */}
+        <mesh position={[0, -0.3, 0.04]}>
+          <boxGeometry args={[0.16, 0.12, 0.22]} />
+          <meshStandardMaterial color={JOINT_COLOR} roughness={0.4} metalness={0.5} />
+        </mesh>
+      </group>
     </group>
   );
 }
