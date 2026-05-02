@@ -14,7 +14,9 @@ const ISS_COLOR = 0xcccccc;
 const SOLAR_PANEL_COLOR = 0x1a237e;
 const TETHER_COLOR = 0xffcc00;
 
-const ISS_POS = new THREE.Vector3(0, 2.2, 0);
+const ISS_ORBIT_RADIUS = 1.8;
+const ISS_ORBIT_CENTER = new THREE.Vector3(0, 1.5, 0);
+const ISS_ORBIT_SPEED = 0.15;
 const REST_POS = new THREE.Vector3(0, -0.5, 0);
 const SPRING_K = 3.5;
 const DAMPING = 0.88;
@@ -22,50 +24,95 @@ const MAX_TETHER = 3.5;
 
 /* ─────────────────── ISS (International Space Station) ─────────────────── */
 
-function ISS() {
+function ISS({ issPos }: { issPos: React.RefObject<THREE.Vector3> }) {
   const ref = useRef<THREE.Group>(null!);
 
   useFrame(({ clock }) => {
     if (!ref.current) return;
     const t = clock.getElapsedTime();
-    ref.current.rotation.y = t * 0.05;
-    ref.current.position.y = ISS_POS.y + Math.sin(t * 0.4) * 0.05;
+
+    // Orbit in a circle
+    const angle = t * ISS_ORBIT_SPEED;
+    const x = ISS_ORBIT_CENTER.x + Math.cos(angle) * ISS_ORBIT_RADIUS;
+    const y = ISS_ORBIT_CENTER.y + Math.sin(angle * 0.6) * 0.4;
+    const z = Math.sin(angle) * 0.5; // slight depth wobble
+
+    ref.current.position.set(x, y, z);
+    issPos.current.set(x, y, z);
+
+    // Face direction of travel
+    ref.current.rotation.y = -angle + Math.PI / 2;
+    ref.current.rotation.z = Math.sin(t * 0.3) * 0.05;
   });
 
   return (
-    <group ref={ref} position={[ISS_POS.x, ISS_POS.y, ISS_POS.z]} scale={0.3}>
+    <group ref={ref} position={[ISS_ORBIT_CENTER.x + ISS_ORBIT_RADIUS, ISS_ORBIT_CENTER.y, 0]} scale={0.3}>
+      {/* ISS-mounted light (sun reflection) */}
+      <pointLight position={[0, 1, 2]} intensity={2} color={0xffffee} distance={5} decay={2} />
+      <pointLight position={[0, -0.5, -1]} intensity={0.5} color={0x4488ff} distance={3} decay={2} />
+
       {/* Main truss */}
       <mesh>
         <boxGeometry args={[4, 0.12, 0.12]} />
-        <meshStandardMaterial color={ISS_COLOR} metalness={0.6} roughness={0.3} />
+        <meshStandardMaterial color={ISS_COLOR} metalness={0.7} roughness={0.2} />
       </mesh>
       {/* Central module */}
       <mesh position={[0, 0, 0]}>
         <cylinderGeometry args={[0.18, 0.18, 0.8, 12]} />
-        <meshStandardMaterial color={0xdddddd} metalness={0.4} roughness={0.4} />
+        <meshStandardMaterial color={0xdddddd} metalness={0.5} roughness={0.3} />
       </mesh>
-      {/* Solar panels (4 pairs) */}
+      {/* Module windows (emissive) */}
+      <mesh position={[0, 0.15, 0.17]}>
+        <boxGeometry args={[0.12, 0.06, 0.02]} />
+        <meshStandardMaterial color={0x88ccff} emissive={0x88ccff} emissiveIntensity={1.5} />
+      </mesh>
+      <mesh position={[0, -0.05, 0.17]}>
+        <boxGeometry args={[0.08, 0.04, 0.02]} />
+        <meshStandardMaterial color={0x88ccff} emissive={0x88ccff} emissiveIntensity={1.5} />
+      </mesh>
+      {/* Solar panels (4 pairs) with emissive glow */}
       {[-1.5, -0.7, 0.7, 1.5].map((x, i) => (
         <group key={i} position={[x, 0, 0]}>
           <mesh position={[0, 0.5, 0]}>
             <boxGeometry args={[0.5, 0.8, 0.02]} />
-            <meshStandardMaterial color={SOLAR_PANEL_COLOR} metalness={0.3} roughness={0.6} />
+            <meshStandardMaterial
+              color={SOLAR_PANEL_COLOR}
+              emissive={0x112255}
+              emissiveIntensity={0.4}
+              metalness={0.4}
+              roughness={0.5}
+            />
           </mesh>
           <mesh position={[0, -0.5, 0]}>
             <boxGeometry args={[0.5, 0.8, 0.02]} />
-            <meshStandardMaterial color={SOLAR_PANEL_COLOR} metalness={0.3} roughness={0.6} />
+            <meshStandardMaterial
+              color={SOLAR_PANEL_COLOR}
+              emissive={0x112255}
+              emissiveIntensity={0.4}
+              metalness={0.4}
+              roughness={0.5}
+            />
           </mesh>
           {/* Panel struts */}
           <mesh position={[0, 0, 0]}>
             <cylinderGeometry args={[0.02, 0.02, 1.6, 6]} />
-            <meshStandardMaterial color={ISS_COLOR} metalness={0.7} roughness={0.2} />
+            <meshStandardMaterial color={ISS_COLOR} metalness={0.8} roughness={0.2} />
           </mesh>
         </group>
       ))}
       {/* Radiator panels */}
       <mesh position={[0, 0, 0.3]} rotation={[0, 0, Math.PI / 2]}>
         <boxGeometry args={[0.3, 1.2, 0.015]} />
-        <meshStandardMaterial color={0xffffff} metalness={0.2} roughness={0.5} />
+        <meshStandardMaterial color={0xffffff} metalness={0.3} roughness={0.4} />
+      </mesh>
+      {/* Docking port light */}
+      <mesh position={[1.8, 0, 0]}>
+        <sphereGeometry args={[0.04, 8, 8]} />
+        <meshStandardMaterial color={0xff3333} emissive={0xff3333} emissiveIntensity={2} />
+      </mesh>
+      <mesh position={[-1.8, 0, 0]}>
+        <sphereGeometry args={[0.04, 8, 8]} />
+        <meshStandardMaterial color={0x33ff33} emissive={0x33ff33} emissiveIntensity={2} />
       </mesh>
     </group>
   );
@@ -73,7 +120,7 @@ function ISS() {
 
 /* ─────────────────── Tether Cable ─────────────────── */
 
-function Tether({ astronautPos }: { astronautPos: React.RefObject<THREE.Vector3> }) {
+function Tether({ astronautPos, issPos }: { astronautPos: React.RefObject<THREE.Vector3>; issPos: React.RefObject<THREE.Vector3> }) {
   const lineRef = useRef<THREE.Line>(null!);
   const geoRef = useRef<THREE.BufferGeometry>(null!);
 
@@ -85,9 +132,10 @@ function Tether({ astronautPos }: { astronautPos: React.RefObject<THREE.Vector3>
   }, []);
 
   useFrame(() => {
-    if (!lineRef.current || !astronautPos.current || !geoRef.current) return;
+    if (!lineRef.current || !astronautPos.current || !geoRef.current || !issPos.current) return;
 
-    const start = new THREE.Vector3(ISS_POS.x, ISS_POS.y - 0.15, ISS_POS.z);
+    const start = issPos.current.clone();
+    start.y -= 0.15;
     const end = astronautPos.current.clone();
     end.y += 0.3;
 
@@ -353,9 +401,11 @@ function AstronautLeg({ side }: { side: number }) {
 function DragPlane({
   posRef,
   isDragging,
+  issPos,
 }: {
   posRef: React.RefObject<THREE.Vector3>;
   isDragging: React.RefObject<boolean>;
+  issPos: React.RefObject<THREE.Vector3>;
 }) {
   const { camera } = useThree();
   const planeRef = useRef<THREE.Mesh>(null!);
@@ -371,8 +421,7 @@ function DragPlane({
 
   const handlePointerMove = useCallback(
     (e: ThreeEvent<PointerEvent>) => {
-      if (!isDragging.current || !posRef.current) return;
-      // Project pointer to world coords on z=0 plane
+      if (!isDragging.current || !posRef.current || !issPos.current) return;
       const ndc = new THREE.Vector2(
         (e.clientX / window.innerWidth) * 2 - 1,
         -(e.clientY / window.innerHeight) * 2 + 1
@@ -383,17 +432,17 @@ function DragPlane({
       const target = new THREE.Vector3();
       raycaster.ray.intersectPlane(plane, target);
       if (target) {
-        // Clamp to max tether length from ISS
-        const dist = target.distanceTo(ISS_POS);
+        // Clamp to max tether length from current ISS position
+        const dist = target.distanceTo(issPos.current);
         if (dist > MAX_TETHER) {
-          const dir = target.clone().sub(ISS_POS).normalize();
-          target.copy(ISS_POS).add(dir.multiplyScalar(MAX_TETHER));
+          const dir = target.clone().sub(issPos.current).normalize();
+          target.copy(issPos.current).add(dir.multiplyScalar(MAX_TETHER));
         }
         posRef.current.x = target.x;
         posRef.current.y = target.y;
       }
     },
-    [camera, posRef, isDragging]
+    [camera, posRef, isDragging, issPos]
   );
 
   const handlePointerUp = useCallback(() => {
@@ -420,16 +469,17 @@ function DragPlane({
 function Scene({ mouse }: { mouse: React.RefObject<{ x: number; y: number }> }) {
   const posRef = useRef(REST_POS.clone());
   const isDragging = useRef(false);
+  const issPos = useRef(new THREE.Vector3(ISS_ORBIT_CENTER.x + ISS_ORBIT_RADIUS, ISS_ORBIT_CENTER.y, 0));
 
   return (
     <>
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 8, 5]} intensity={1.2} color={0xffffff} />
-      <pointLight position={[-4, 3, 2]} intensity={0.6} color={0x8080ff} />
-      <ISS />
-      <Tether astronautPos={posRef} />
+      <ambientLight intensity={0.4} />
+      <directionalLight position={[5, 8, 5]} intensity={1} color={0xffffff} />
+      <pointLight position={[-4, 3, 2]} intensity={0.4} color={0x6060cc} />
+      <ISS issPos={issPos} />
+      <Tether astronautPos={posRef} issPos={issPos} />
       <Astronaut mouse={mouse} posRef={posRef} isDragging={isDragging} />
-      <DragPlane posRef={posRef} isDragging={isDragging} />
+      <DragPlane posRef={posRef} isDragging={isDragging} issPos={issPos} />
     </>
   );
 }
@@ -467,11 +517,11 @@ export default function FloatingAstronaut() {
 
   return (
     <div
-      className="fixed bottom-4 left-4 z-30 w-48 h-64 md:w-56 md:h-72"
+      className="fixed bottom-4 left-4 z-30 w-56 h-72 md:w-64 md:h-80"
       aria-hidden="true"
     >
       <Canvas
-        camera={{ position: [0, 0.5, 5], fov: 45 }}
+        camera={{ position: [0, 0.5, 7], fov: 45 }}
         gl={{ alpha: true, antialias: true, powerPreference: "low-power" }}
         style={{ background: "transparent", cursor: "grab" }}
         dpr={[1, 1.5]}
