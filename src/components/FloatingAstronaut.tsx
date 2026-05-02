@@ -10,109 +10,148 @@ const SUIT_COLOR = 0xeaeaea;
 const JOINT_COLOR = 0x555555;
 const VISOR_COLOR = 0x4fc3f7;
 const ACCENT_COLOR = 0xc62828;
-const ISS_COLOR = 0xcccccc;
-const SOLAR_PANEL_COLOR = 0x1a237e;
+const HULL_COLOR = 0xd4d4d8;
+const HULL_DARK = 0x71717a;
+const ENGINE_COLOR = 0x44403c;
+const THRUSTER_GLOW = 0x38bdf8;
 const TETHER_COLOR = 0xffcc00;
 
-const ISS_ORBIT_RADIUS = 1.8;
-const ISS_ORBIT_CENTER = new THREE.Vector3(0, 1.5, 0);
-const ISS_ORBIT_SPEED = 0.15;
+const SHIP_ORBIT_RADIUS = 1.8;
+const SHIP_ORBIT_CENTER = new THREE.Vector3(0, 1.5, 0);
+const SHIP_ORBIT_SPEED = 0.15;
 const REST_POS = new THREE.Vector3(0, -0.5, 0);
 const SPRING_K = 3.5;
 const DAMPING = 0.88;
 const MAX_TETHER = 3.5;
 
-/* ─────────────────── ISS (International Space Station) ─────────────────── */
+/* ─────────────────── Rocket Ship (Hail Mary style) ─────────────────── */
 
-function ISS({ issPos }: { issPos: React.RefObject<THREE.Vector3> }) {
+function Spaceship({ issPos }: { issPos: React.RefObject<THREE.Vector3> }) {
   const ref = useRef<THREE.Group>(null!);
+  const exhaustRef = useRef<THREE.Mesh>(null!);
 
   useFrame(({ clock }) => {
     if (!ref.current) return;
     const t = clock.getElapsedTime();
 
     // Orbit in a circle
-    const angle = t * ISS_ORBIT_SPEED;
-    const x = ISS_ORBIT_CENTER.x + Math.cos(angle) * ISS_ORBIT_RADIUS;
-    const y = ISS_ORBIT_CENTER.y + Math.sin(angle * 0.6) * 0.4;
-    const z = Math.sin(angle) * 0.5; // slight depth wobble
+    const angle = t * SHIP_ORBIT_SPEED;
+    const x = SHIP_ORBIT_CENTER.x + Math.cos(angle) * SHIP_ORBIT_RADIUS;
+    const y = SHIP_ORBIT_CENTER.y + Math.sin(angle * 0.6) * 0.4;
+    const z = Math.sin(angle) * 0.5;
 
     ref.current.position.set(x, y, z);
     issPos.current.set(x, y, z);
 
-    // Face direction of travel
+    // Face direction of travel (nose forward)
     ref.current.rotation.y = -angle + Math.PI / 2;
-    ref.current.rotation.z = Math.sin(t * 0.3) * 0.05;
+    ref.current.rotation.z = Math.sin(t * 0.3) * 0.04;
+    ref.current.rotation.x = Math.sin(t * 0.2) * 0.03;
+
+    // Pulse exhaust glow
+    if (exhaustRef.current) {
+      const mat = exhaustRef.current.material as THREE.MeshStandardMaterial;
+      mat.emissiveIntensity = 1.5 + Math.sin(t * 12) * 0.5;
+      exhaustRef.current.scale.setScalar(0.9 + Math.sin(t * 15) * 0.15);
+    }
   });
 
   return (
-    <group ref={ref} position={[ISS_ORBIT_CENTER.x + ISS_ORBIT_RADIUS, ISS_ORBIT_CENTER.y, 0]} scale={0.3}>
-      {/* ISS-mounted light (sun reflection) */}
-      <pointLight position={[0, 1, 2]} intensity={2} color={0xffffee} distance={5} decay={2} />
-      <pointLight position={[0, -0.5, -1]} intensity={0.5} color={0x4488ff} distance={3} decay={2} />
+    <group ref={ref} position={[SHIP_ORBIT_CENTER.x + SHIP_ORBIT_RADIUS, SHIP_ORBIT_CENTER.y, 0]} scale={0.25}>
+      {/* Ship lighting */}
+      <pointLight position={[0, 1, 2]} intensity={2} color={0xffffff} distance={5} decay={2} />
+      <pointLight position={[0, -1, -2]} intensity={0.8} color={THRUSTER_GLOW} distance={4} decay={2} />
 
-      {/* Main truss */}
-      <mesh>
-        <boxGeometry args={[4, 0.12, 0.12]} />
-        <meshStandardMaterial color={ISS_COLOR} metalness={0.7} roughness={0.2} />
+      {/* ── Main fuselage (long cylinder) ── */}
+      <mesh rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.25, 0.3, 2.8, 16]} />
+        <meshStandardMaterial color={HULL_COLOR} metalness={0.7} roughness={0.25} />
       </mesh>
-      {/* Central module */}
-      <mesh position={[0, 0, 0]}>
-        <cylinderGeometry args={[0.18, 0.18, 0.8, 12]} />
-        <meshStandardMaterial color={0xdddddd} metalness={0.5} roughness={0.3} />
+
+      {/* ── Nose cone ── */}
+      <mesh position={[1.7, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
+        <coneGeometry args={[0.25, 0.8, 16]} />
+        <meshStandardMaterial color={HULL_COLOR} metalness={0.8} roughness={0.2} />
       </mesh>
-      {/* Module windows (emissive) */}
-      <mesh position={[0, 0.15, 0.17]}>
-        <boxGeometry args={[0.12, 0.06, 0.02]} />
-        <meshStandardMaterial color={0x88ccff} emissive={0x88ccff} emissiveIntensity={1.5} />
+      {/* Nose tip (accent) */}
+      <mesh position={[2.15, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
+        <coneGeometry args={[0.06, 0.2, 8]} />
+        <meshStandardMaterial color={ACCENT_COLOR} emissive={ACCENT_COLOR} emissiveIntensity={0.5} />
       </mesh>
-      <mesh position={[0, -0.05, 0.17]}>
-        <boxGeometry args={[0.08, 0.04, 0.02]} />
-        <meshStandardMaterial color={0x88ccff} emissive={0x88ccff} emissiveIntensity={1.5} />
+
+      {/* ── Cockpit windows ── */}
+      <mesh position={[1.2, 0.15, 0.12]}>
+        <boxGeometry args={[0.3, 0.08, 0.02]} />
+        <meshStandardMaterial color={0x88ddff} emissive={0x88ddff} emissiveIntensity={2} />
       </mesh>
-      {/* Solar panels (4 pairs) with emissive glow */}
-      {[-1.5, -0.7, 0.7, 1.5].map((x, i) => (
-        <group key={i} position={[x, 0, 0]}>
-          <mesh position={[0, 0.5, 0]}>
-            <boxGeometry args={[0.5, 0.8, 0.02]} />
-            <meshStandardMaterial
-              color={SOLAR_PANEL_COLOR}
-              emissive={0x112255}
-              emissiveIntensity={0.4}
-              metalness={0.4}
-              roughness={0.5}
-            />
+      <mesh position={[1.2, 0.08, 0.18]}>
+        <boxGeometry args={[0.2, 0.05, 0.02]} />
+        <meshStandardMaterial color={0x88ddff} emissive={0x88ddff} emissiveIntensity={1.5} />
+      </mesh>
+
+      {/* ── Hull panels / detail lines ── */}
+      <mesh position={[0.3, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <torusGeometry args={[0.28, 0.015, 8, 24]} />
+        <meshStandardMaterial color={HULL_DARK} metalness={0.9} roughness={0.2} />
+      </mesh>
+      <mesh position={[-0.4, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <torusGeometry args={[0.3, 0.015, 8, 24]} />
+        <meshStandardMaterial color={HULL_DARK} metalness={0.9} roughness={0.2} />
+      </mesh>
+      <mesh position={[-1.0, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <torusGeometry args={[0.31, 0.018, 8, 24]} />
+        <meshStandardMaterial color={HULL_DARK} metalness={0.9} roughness={0.2} />
+      </mesh>
+
+      {/* ── Engine section (wider rear) ── */}
+      <mesh position={[-1.6, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.35, 0.3, 0.6, 16]} />
+        <meshStandardMaterial color={ENGINE_COLOR} metalness={0.8} roughness={0.3} />
+      </mesh>
+
+      {/* ── Engine bells (3) ── */}
+      {[0, (Math.PI * 2) / 3, (Math.PI * 4) / 3].map((a, i) => (
+        <group key={i} position={[-1.9, Math.sin(a) * 0.18, Math.cos(a) * 0.18]}>
+          <mesh rotation={[0, 0, Math.PI / 2]}>
+            <coneGeometry args={[0.12, 0.35, 12]} />
+            <meshStandardMaterial color={ENGINE_COLOR} metalness={0.9} roughness={0.15} side={THREE.DoubleSide} />
           </mesh>
-          <mesh position={[0, -0.5, 0]}>
-            <boxGeometry args={[0.5, 0.8, 0.02]} />
-            <meshStandardMaterial
-              color={SOLAR_PANEL_COLOR}
-              emissive={0x112255}
-              emissiveIntensity={0.4}
-              metalness={0.4}
-              roughness={0.5}
-            />
-          </mesh>
-          {/* Panel struts */}
-          <mesh position={[0, 0, 0]}>
-            <cylinderGeometry args={[0.02, 0.02, 1.6, 6]} />
-            <meshStandardMaterial color={ISS_COLOR} metalness={0.8} roughness={0.2} />
+          {/* Inner glow */}
+          <mesh position={[0.05, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <circleGeometry args={[0.09, 12]} />
+            <meshStandardMaterial color={THRUSTER_GLOW} emissive={THRUSTER_GLOW} emissiveIntensity={3} />
           </mesh>
         </group>
       ))}
-      {/* Radiator panels */}
-      <mesh position={[0, 0, 0.3]} rotation={[0, 0, Math.PI / 2]}>
-        <boxGeometry args={[0.3, 1.2, 0.015]} />
-        <meshStandardMaterial color={0xffffff} metalness={0.3} roughness={0.4} />
+
+      {/* ── Exhaust plume ── */}
+      <mesh ref={exhaustRef} position={[-2.3, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <coneGeometry args={[0.18, 0.7, 12]} />
+        <meshStandardMaterial
+          color={THRUSTER_GLOW}
+          emissive={THRUSTER_GLOW}
+          emissiveIntensity={2}
+          transparent
+          opacity={0.5}
+        />
       </mesh>
-      {/* Docking port light */}
-      <mesh position={[1.8, 0, 0]}>
-        <sphereGeometry args={[0.04, 8, 8]} />
-        <meshStandardMaterial color={0xff3333} emissive={0xff3333} emissiveIntensity={2} />
+
+      {/* ── Fins (4 stabilizers) ── */}
+      {[0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2].map((a, i) => (
+        <mesh key={i} position={[-1.5, Math.sin(a) * 0.4, Math.cos(a) * 0.4]} rotation={[a, 0, 0.3]}>
+          <boxGeometry args={[0.5, 0.4, 0.02]} />
+          <meshStandardMaterial color={HULL_DARK} metalness={0.6} roughness={0.3} />
+        </mesh>
+      ))}
+
+      {/* ── Nav lights ── */}
+      <mesh position={[0.8, 0.3, 0]}>
+        <sphereGeometry args={[0.03, 8, 8]} />
+        <meshStandardMaterial color={0xff3333} emissive={0xff3333} emissiveIntensity={3} />
       </mesh>
-      <mesh position={[-1.8, 0, 0]}>
-        <sphereGeometry args={[0.04, 8, 8]} />
-        <meshStandardMaterial color={0x33ff33} emissive={0x33ff33} emissiveIntensity={2} />
+      <mesh position={[0.8, -0.3, 0]}>
+        <sphereGeometry args={[0.03, 8, 8]} />
+        <meshStandardMaterial color={0x33ff33} emissive={0x33ff33} emissiveIntensity={3} />
       </mesh>
     </group>
   );
@@ -469,14 +508,14 @@ function DragPlane({
 function Scene({ mouse }: { mouse: React.RefObject<{ x: number; y: number }> }) {
   const posRef = useRef(REST_POS.clone());
   const isDragging = useRef(false);
-  const issPos = useRef(new THREE.Vector3(ISS_ORBIT_CENTER.x + ISS_ORBIT_RADIUS, ISS_ORBIT_CENTER.y, 0));
+  const issPos = useRef(new THREE.Vector3(SHIP_ORBIT_CENTER.x + SHIP_ORBIT_RADIUS, SHIP_ORBIT_CENTER.y, 0));
 
   return (
     <>
       <ambientLight intensity={0.4} />
       <directionalLight position={[5, 8, 5]} intensity={1} color={0xffffff} />
       <pointLight position={[-4, 3, 2]} intensity={0.4} color={0x6060cc} />
-      <ISS issPos={issPos} />
+      <Spaceship issPos={issPos} />
       <Tether astronautPos={posRef} issPos={issPos} />
       <Astronaut mouse={mouse} posRef={posRef} isDragging={isDragging} />
       <DragPlane posRef={posRef} isDragging={isDragging} issPos={issPos} />
